@@ -3,7 +3,7 @@ import {
     fetchBaseQuery
 } from "@reduxjs/toolkit/query/react";
 const baseQuery = fetchBaseQuery({
-    baseUrl: process.env.API_URL,
+    baseUrl: "",
     credentials: 'include',
     prepareHeaders: (headers, {}) => {
         // const token = (getState() as RootState).auth.token;

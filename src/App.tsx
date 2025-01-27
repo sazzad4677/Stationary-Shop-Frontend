@@ -1,20 +1,10 @@
-import Navbar from "@/components/layout/Navbar.tsx";
-import HeroSection from "@/components/layout/HeroSection.tsx";
-import FeaturedProducts from "@/components/layout/FeaturedProducts.tsx";
-import Testimonials from "@/components/layout/Testimonials.tsx";
-import Footer from "@/components/layout/Footer.tsx";
+import MainLayout from "@/components/layout/MainLayout.tsx";
 
 function App() {
 
-  return (
-    <>
-        <Navbar/>
-        <HeroSection/>
-        <FeaturedProducts/>
-        <Testimonials/>
-        <Footer/>
-    </>
-  )
+    return (
+        <MainLayout/>
+    )
 }
 
 export default App
