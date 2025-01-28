@@ -33,6 +33,7 @@ const FeaturedProducts = () => {
     ]
 
 
+
     return (
         <section className=" py-16">
             {/* Section Title */}

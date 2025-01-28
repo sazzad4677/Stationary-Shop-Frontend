@@ -19,6 +19,8 @@ import {SelectField} from "@/components/form/fields/SelectField.tsx";
 import DateField from "@/components/form/fields/DateField.tsx";
 import ImageField from "@/components/form/fields/ImageField.tsx";
 import {PasswordField} from "@/components/form/fields/PasswordField.tsx";
+import {SliderField} from "@/components/form/fields/Slider.tsx";
+import SearchField from "@/components/form/fields/SearchField.tsx";
 
 // eslint-disable-next-line
 export type TGenericFormRef<TFormValues extends FieldValues = any> = {
@@ -75,3 +77,5 @@ GenericForm.Reset = FormReset
 GenericForm.Date = DateField
 GenericForm.Image = ImageField
 GenericForm.PasswordField = PasswordField
+GenericForm.SliderField = SliderField
+GenericForm.SearchField = SearchField

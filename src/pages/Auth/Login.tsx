@@ -11,8 +11,12 @@ import {Label} from "@/components/ui/label"
 import {GenericForm, TGenericFormRef} from "@/components/form/GenericForm.tsx";
 import {z} from "zod";
 import {loginSchema} from "@/pages/Auth/auth.schema.ts";
-import {Link} from "react-router";
+import {Link, useNavigate} from "react-router";
 import {useRef} from "react";
+import {useLoginMutation} from "@/redux/features/auth/auth.api.ts";
+import toast from "react-hot-toast";
+import {useAppDispatch} from "@/redux/hooks.ts";
+import {setUser} from "@/redux/features/auth/auth.slice.ts";
 
 type TLogin = z.infer<typeof loginSchema>
 
@@ -22,10 +26,32 @@ const initialValues: TLogin = {
 }
 
 const LoginForm = () => {
+    const navigate = useNavigate();
+    const dispatch = useAppDispatch();
     const ref = useRef<TGenericFormRef<TLogin>>(null)
-    const onSubmit = (data: TLogin) => {
-        console.log(data)
-    }
+    const [login, {isLoading}] = useLoginMutation(undefined)
+
+    const onSubmit = async (values: TLogin) => {
+        try {
+            await toast.promise(
+                (async () => {
+                    const response = login(values).unwrap();
+                    const {data} = await response;
+                    dispatch(setUser({ token: data.token }));
+                    navigate("/");
+                })(),
+                {
+                    loading: 'Loading...',
+                    success: 'Successfully logged in',
+                    error: (err: { data: { message: string; }; }) => err?.data?.message,
+                }
+            );
+        } catch (error) {
+            console.error('An error occurred:', error);
+            toast.error('Something went wrong! Please try again.');
+        }
+    };
+
     return (
         <div className={cn("flex flex-col gap-6 py-16")}>
             <Card className="w-[450px] mx-auto">
@@ -50,9 +76,9 @@ const LoginForm = () => {
                         </div>
                         <div
                             className="relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
-                <span className="relative z-10 bg-background px-2 text-muted-foreground">
-                  Or continue with
-                </span>
+                                        <span className="relative z-10 bg-background px-2 text-muted-foreground">
+                                             Or continue with
+                                         </span>
                         </div>
                         <GenericForm ref={ref} schema={loginSchema} onSubmit={onSubmit}
                                      initialValues={initialValues}>
@@ -83,10 +109,10 @@ const LoginForm = () => {
                                             Forgot your password?
                                         </Link>
                                     </div>
-                                    <GenericForm.PasswordField<TLogin> name="password"  required
-                                                              placeholder="********"/>
+                                    <GenericForm.PasswordField<TLogin> name="password" required
+                                                                       placeholder="********"/>
                                 </div>
-                                <Button type="submit" className="w-full">
+                                <Button type="submit" className="w-full" loading={isLoading}>
                                     Login
                                 </Button>
                             </div>

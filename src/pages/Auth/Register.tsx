@@ -9,22 +9,64 @@ import {
 } from "@/components/ui/card"
 import {GenericForm, TGenericFormRef} from "@/components/form/GenericForm.tsx";
 import {z} from "zod";
-import {loginSchema, registerSchema} from "@/pages/Auth/auth.schema.ts";
-import {Link} from "react-router";
+import {registerSchema} from "@/pages/Auth/auth.schema.ts";
+import {Link, useNavigate} from "react-router";
 import {useRef} from "react";
+import {useRegisterMutation} from "@/redux/features/auth/auth.api.ts";
+import {setUser} from "@/redux/features/auth/auth.slice.ts";
+import toast from "react-hot-toast";
+import {useAppDispatch} from "@/redux/hooks.ts";
 
 type TRegister = z.infer<typeof registerSchema>
 
 const initialValues: TRegister = {
+    name: "",
     email: "",
     password: "",
 }
 
 const RegisterForm = () => {
+    const dispatch = useAppDispatch();
+    const navigate = useNavigate();
     const ref = useRef<TGenericFormRef<TRegister>>(null)
-    const onSubmit = (data: TRegister) => {
-        console.log(data)
-    }
+    const [register, {isLoading}] = useRegisterMutation(undefined)
+    // const onSubmit = async (values: TRegister) => {
+    //     try {
+    //         const res = register(values).unwrap();
+    //         // const {data} = await res;
+    //         // dispatch(setUser({
+    //         //     token: data.token,
+    //         // }))
+    //         // navigate("/")
+    //         await toast.promise(res, {
+    //             loading: 'Loading...',
+    //             success: 'Successfully Registered',
+    //             error: (err: { data: { message: string; }; }) => err?.data?.message,
+    //         });
+    //     } catch (error) {
+    //         console.error('An error occurred:', error);
+    //         toast.error('Something went wrong! Please try again.');
+    //     }
+    // }
+    const onSubmit = async (values: TRegister) => {
+        try {
+            await toast.promise(
+                (async () => {
+                    const response = await register(values).unwrap();
+                    dispatch(setUser({ token: response.data.token }));
+                    navigate("/");
+                })(),
+                {
+                    loading: 'Loading...',
+                    success: 'Successfully Registered',
+                    error: (err: { data: { message: string } }) => err?.data?.message || 'Something went wrong!',
+                }
+            );
+        } catch (error) {
+            console.error('An error occurred:', error);
+            toast.error('Something went wrong! Please try again.');
+        }
+    };
     return (
         <div className={cn("flex flex-col gap-6  py-16")}>
             <Card className="w-[450px] mx-auto">
@@ -53,9 +95,19 @@ const RegisterForm = () => {
                   Or continue with
                 </span>
                         </div>
-                        <GenericForm ref={ref} schema={loginSchema} onSubmit={onSubmit}
+                        <GenericForm ref={ref} schema={registerSchema} onSubmit={onSubmit}
                                      initialValues={initialValues}>
                             <div className={"grid gap-6"}>
+                                <div className="grid gap-2">
+                                    <GenericForm.Text
+                                        <TRegister>
+                                        name="name"
+                                        type="text"
+                                        label="Name"
+                                        placeholder="Enter your Name"
+                                        required
+                                    />
+                                </div>
                                 <div className="grid gap-2">
                                     <GenericForm.Text
                                         <TRegister>
@@ -68,10 +120,9 @@ const RegisterForm = () => {
                                 </div>
                                 <div className="grid gap-2">
                                     <GenericForm.PasswordField<TRegister> name="password" label={"Password"} required
-                                                                          placeholder="********" showMessage
-                                                                          showStrength/>
+                                                                          placeholder="********"/>
                                 </div>
-                                <Button type="submit" className="w-full">
+                                <Button type="submit" className="w-full" loading={isLoading}>
                                     Register
                                 </Button>
                             </div>
