@@ -30,10 +30,10 @@ const Navbar = () => {
     const dispatch = useAppDispatch()
     const [apiLogout] = useLogoutMutation();
     const [isSheetOpen, setIsSheetOpen] = useState(false);
-    const cartCount = 2
     const location = useLocation()
     const pathname = location.pathname
     const user = useAppSelector(selectUser)
+    const cartCount = useAppSelector((state) => state.cart.totalQuantity);
     const handleLogout = async () => {
         await apiLogout(undefined)
         dispatch(logout())

@@ -8,6 +8,8 @@ import {GenericForm, TGenericFormRef} from "@/components/form/GenericForm.tsx";
 import {useGetProductsQuery} from "@/redux/features/products/products.api.ts";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover.tsx";
 import {useDebounce} from "@/hooks/useDebounce.tsx";
+import {DynamicPagination} from "@/components/features/DynamicPagination.tsx";
+import stationeryCategories from "@/constants/global.ts";
 
 export interface TProduct {
     _id: string
@@ -18,16 +20,7 @@ export interface TProduct {
     description: string
     quantity: number
     inStock: boolean
-}
-
-const getMinMaxPrice = (productData: TProduct[]) => {
-    let minPrice = 0
-    let maxPrice = 0
-    if (productData) {
-        minPrice = Math.min(...productData.map((product) => product.price));
-        maxPrice = Math.max(...productData.map((product) => product.price));
-    }
-    return {minPrice, maxPrice};
+    updatedAt: string
 }
 
 const initialValues: TFilter = {
@@ -36,23 +29,21 @@ const initialValues: TFilter = {
     selectedCategory: "all",
     inStock: false,
     sortBy: "createdAt",
-    page: 1,
-    limit: 10
 };
 
 export default function AllProductsPage() {
+    const [searchTerm, setSearchTerm] = useState("");
+    const [currentPage, setCurrentPage] = useState(1)
+    const [limit, setLimit] = useState(20)
     const formRef = useRef<TGenericFormRef<TFilter>>(null);
-    const searchTerm = formRef.current?.getValues();
-    const debounce = useDebounce(searchTerm?.searchTerm || "", 500);
+    const debounce = useDebounce(searchTerm, 500);
     const [query, setQuery] = useState<Record<string, unknown>>({
-        page: initialValues.page,
-        limit: initialValues.limit,
+        page: currentPage,
+        limit: limit,
         sortBy: initialValues.sortBy,
     });
-    const {data: productData, refetch} = useGetProductsQuery(query)
-    const categoryOptions = Array.from(
-        new Set(productData?.data?.map((product: TProduct) => product.category))
-    ).map((category) => ({
+    const {data: productData} = useGetProductsQuery(query)
+    const categoryOptions = stationeryCategories.map((category) => ({
         value: category,
         label: category,
     }));
@@ -70,31 +61,32 @@ export default function AllProductsPage() {
             "filter[category]": values.selectedCategory,
             "filter[inStock]": values.inStock,
             sortBy: values.sortBy,
-            page: values.page,
-            limit: values.limit,
         };
         setQuery(queryObject);
-        refetch()
     }
 
     useEffect(() => {
         if (productData?.data) {
-            const {minPrice, maxPrice} = getMinMaxPrice(productData.data);
-            formRef.current?.setValue("priceRange", [minPrice, maxPrice])
+            formRef.current?.setValue("priceRange", [productData?.meta.minPrice, productData?.meta.maxPrice])
         }
     }, [productData]);
 
+    useEffect(() => {
+        if (formRef.current) {
+            const subscription = formRef.current.form.watch((value) => {
+                setSearchTerm(value.searchTerm || "");
+            });
+            return () => subscription.unsubscribe();
+        }
+    }, [formRef]);
 
-    // useEffect(() => {
-    //     console.log(debounce)
-    //     if (debounce.trim() !== "") {
-    //         setQuery((prev) => ({
-    //             ...prev,
-    //             search: debounce,
-    //         }));
-    //         refetch();
-    //     }
-    // }, [ debounce]);
+
+    useEffect(() => {
+        setQuery((prev) => ({
+            ...prev,
+            search: debounce,
+        }));
+    }, [debounce]);
     return (
         <div className="container mx-auto py-4  min-h-screen px-16">
             <GenericForm ref={formRef}
@@ -129,8 +121,8 @@ export default function AllProductsPage() {
                                 {/* Price Range Slider */}
                                 <GenericForm.SliderField<TFilter>
                                     name="priceRange"
-                                    min={getMinMaxPrice(productData?.data || []).minPrice}
-                                    max={getMinMaxPrice(productData?.data || []).maxPrice}
+                                    min={productData?.meta.minPrice}
+                                    max={productData?.meta.maxPrice}
                                     step={1}
                                     label="Price Range"
                                 />
@@ -150,16 +142,32 @@ export default function AllProductsPage() {
                                     placeholder="Sort by"
                                     options={sortByOptions}
                                 />
-                                <Button type="button" className={"w-full"}
-                                        onClick={() => formRef.current?.form?.handleSubmit(onSubmit)()}>
-                                    Apply Filters
-                                </Button>
+                                <div className={"flex justify-between"}>
+                                    <Button type="button"
+                                            onClick={() => formRef.current?.form?.handleSubmit(onSubmit)()}>
+                                        Apply Filters
+                                    </Button>
+                                    <Button type="button" variant={"destructive"}
+                                            onClick={() => {
+                                                formRef.current?.form?.reset();
+                                                setQuery({
+                                                    page: 1,
+                                                    limit: 20,
+                                                    sortBy: initialValues.sortBy,
+                                                });
+                                                setCurrentPage(1);
+                                                setLimit(20);
+                                                setSearchTerm("");
+                                            }}>
+                                        Reset
+                                    </Button>
+                                </div>
                             </div>
                         </PopoverContent>
                     </Popover>
                 </div>
 
-                <div className="relative">
+                <div className="relative w-full h-full">
                     <AnimatePresence>
                         <motion.div
                             initial={{opacity: 0, y: 20}}
@@ -183,6 +191,22 @@ export default function AllProductsPage() {
                     </AnimatePresence>
                 </div>
             </GenericForm>
+            <div className={"mt-8"}>
+                <DynamicPagination currentPage={currentPage} totalItems={productData?.meta?.total || 0}
+                                   itemsPerPage={limit} onItemsPerPageChange={(v) => {
+                    setLimit(v)
+                    setQuery((prev) => ({
+                        ...prev,
+                        limit: v,
+                    }))
+                }} onPageChange={(v) => {
+                    setCurrentPage(v)
+                    setQuery((prev) => ({
+                        ...prev,
+                        page: v,
+                    }))
+                }}/>
+            </div>
         </div>
     );
 }

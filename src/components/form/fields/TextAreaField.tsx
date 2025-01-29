@@ -5,8 +5,8 @@ import {ReactNode} from "react";
 import {cn} from "@/lib/utils.ts";
 import {Button} from "@/components/ui/button.tsx";
 import {X} from "lucide-react";
-import LoadingSpinner from "@/components/LoadingSpinner";
 import {Textarea} from "@/components/ui/textarea.tsx";
+import LoadingSpinner from "@/components/ui/loadingSpinner.tsx";
 
 export type TextAreaFieldProps<T extends FieldValues> = {
     name: Path<T>;
@@ -56,7 +56,6 @@ const TextAreaField = <T extends FieldValues>({
                                                   disabled,
                                                   action,
                                                   resizeable = false,
-                                                  autoResize = false,
                                               }: TextAreaFieldProps<T>) => {
     const control = useGenericFormContext<T>();
     return (
@@ -76,7 +75,7 @@ const TextAreaField = <T extends FieldValues>({
                                 placeholder={placeholder} {...field}
                                 className={cn(`w-full ${inputClassName}`, action && "pr-12", resizeable === false && "resize-none")}
                                 id={name}
-                                disabled={disabled} autoResize={autoResize}/>
+                                disabled={disabled} />
                             {loading && <LoadingSpinner className={"absolute right-4"}/>}
                             {
                                 action && (

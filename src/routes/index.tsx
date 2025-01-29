@@ -6,6 +6,10 @@ import RegisterForm from "@/pages/Auth/Register.tsx";
 import AboutPage from "@/pages/AboutUs";
 import AllProductsPage from "@/pages/Products";
 import CartPage from "@/pages/Cart";
+import OrderPlaced from "@/pages/OrderPlaced";
+import ProductDetailsPage from "@/pages/ProductDetails";
+import PrivateRoute from "@/routes/PrivateRoute.tsx";
+import NotFound from "@/pages/NotFound";
 
 const router = createBrowserRouter([
     {
@@ -33,9 +37,28 @@ const router = createBrowserRouter([
                 element: <AllProductsPage/>
             },
             {
+                path: "products/:id",
+                element: <ProductDetailsPage/>
+            },
+            {
                 path: "cart",
-                element: <CartPage/>
-            }
+                element: <PrivateRoute/> ,
+                children: [
+                    {
+                        index: true,
+                        element: <CartPage/>
+                    }
+                ]
+            },
+            {
+                path: "order-placed",
+                element: <OrderPlaced/>
+            },
+            {
+                path: "*",
+                element: <NotFound />,
+            },
+
         ]
     },
 ])

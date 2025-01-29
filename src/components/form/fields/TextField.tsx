@@ -20,7 +20,8 @@ export type TextFieldProps<T extends FieldValues> = {
     className?: string;
     inputClassName?: string;
     disabled?: boolean;
-    action?: () => void
+    action?: () => void,
+    autoComplete?: string,
 }
 
 /**
@@ -54,7 +55,8 @@ const TextField = <T extends FieldValues>({
                                               className,
                                               inputClassName,
                                               disabled,
-                                              action
+                                              action,
+                                              autoComplete,
                                           }: TextFieldProps<T>) => {
     const control = useGenericFormContext<T>();
     return (
@@ -74,7 +76,9 @@ const TextField = <T extends FieldValues>({
                                 placeholder={placeholder} type={type} {...field}
                                 className={cn(`w-full ${inputClassName}`, action && "pr-12")}
                                 id={name}
-                                disabled={disabled}/>
+                                disabled={disabled}
+                                autoComplete={autoComplete}
+                            />
                             {loading && <LoadingSpinner className={"absolute right-4"}/>}
                             {
                                 action && (

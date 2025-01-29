@@ -1,39 +1,12 @@
 import {ProductCard} from "@/components/features/ProductCard.tsx";
+import {useGetProductsQuery} from "@/redux/features/products/products.api.ts";
 
 const FeaturedProducts = () => {
-    const products = [
-        {
-            title: "The Valentine's Day Mini",
-            description: 'Foiled 6.5" x 6.5" Hardcover Photo Book',
-            price: 38.0,
-            imageSrc: "https://papier.imgix.net/https%3A%2F%2Fwww.papier.com%2Fus%2Ftemplated_image%2F92%2F1737540453%2F1737377644%2F53002.jpg?ixlib=rb-3.2.1&w=408&auto=format%2Ccompress&s=7af09533e4432b3386c54b675b8309d9",
-            isNew: true,
-        },
-        {
-            title: "Painted Love",
-            description: "Wellness Journal",
-            price: 35.0,
-            imageSrc: "",
-            isNew: false,
-        },
-        {
-            title: "Sweet Treat",
-            description: "Recipe Journal & Recipe Cards Set",
-            price: 80.0,
-            imageSrc: "",
-            isNew: true,
-        },
-        {
-            title: "Full of Heart",
-            description: "Notecard Set",
-            price: 38.0,
-            imageSrc: "",
-            isNew: false,
-        },
-    ]
-
-
-
+    const {data: productData} = useGetProductsQuery({
+        page: Math.floor(Math.random() * 3) + 1,
+        limit: 8,
+        "filter[inStock]": true
+    })
     return (
         <section className=" py-16">
             {/* Section Title */}
@@ -50,8 +23,8 @@ const FeaturedProducts = () => {
 
             {/* Product Grid */}
             <div className="container mx-auto mt-8 grid grid-cols-1 gap-8 px-4 sm:grid-cols-2 lg:grid-cols-4">
-                {products.map((product) => (
-                    <ProductCard key={product.title} {...product} />
+                {productData?.data?.map((product) => (
+                    <ProductCard key={product._id} {...product} />
                 ))}
             </div>
         </section>

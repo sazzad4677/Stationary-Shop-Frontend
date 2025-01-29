@@ -11,7 +11,7 @@ import {Label} from "@/components/ui/label"
 import {GenericForm, TGenericFormRef} from "@/components/form/GenericForm.tsx";
 import {z} from "zod";
 import {loginSchema} from "@/pages/Auth/auth.schema.ts";
-import {Link, useNavigate} from "react-router";
+import {Link, useLocation, useNavigate} from "react-router";
 import {useRef} from "react";
 import {useLoginMutation} from "@/redux/features/auth/auth.api.ts";
 import toast from "react-hot-toast";
@@ -27,6 +27,8 @@ const initialValues: TLogin = {
 
 const LoginForm = () => {
     const navigate = useNavigate();
+    const location = useLocation();
+    const from = location.state?.from?.pathname || "/";
     const dispatch = useAppDispatch();
     const ref = useRef<TGenericFormRef<TLogin>>(null)
     const [login, {isLoading}] = useLoginMutation(undefined)
@@ -38,7 +40,7 @@ const LoginForm = () => {
                     const response = login(values).unwrap();
                     const {data} = await response;
                     dispatch(setUser({ token: data.token }));
-                    navigate("/");
+                    navigate(from);
                 })(),
                 {
                     loading: 'Loading...',
@@ -94,6 +96,7 @@ const LoginForm = () => {
                                         type="email"
                                         placeholder="your-email@example.com"
                                         required
+                                        autoComplete="email"
                                     />
                                 </div>
                                 <div className="grid gap-2">

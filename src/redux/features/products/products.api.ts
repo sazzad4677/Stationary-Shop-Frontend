@@ -19,7 +19,19 @@ const productApi = baseApi.injectEndpoints({
                     meta: response.meta,
                 };
             },
+            keepUnusedDataFor: 0,
         }),
+        getSingleProduct:  builder.query({
+            query: (productId) => {
+                return {
+                    url: `/products/${productId}`,
+                    method: "GET",
+                }
+            },
+            transformResponse: (response: { data: TProduct }) => {
+                return response.data;
+            }
+        })
     }),
 })
-export const {useGetProductsQuery} = productApi;
+export const {useGetProductsQuery, useGetSingleProductQuery} = productApi;

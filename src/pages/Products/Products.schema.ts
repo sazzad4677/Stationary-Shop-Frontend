@@ -6,8 +6,6 @@ export const filterSchema = z.object({
     selectedCategory: z.string().nullable(),
     inStock: z.boolean(),
     sortBy: z.enum(["-price", "price", "name", "createdAt"]),
-    page: z.number(),
-    limit: z.number(),
 });
 
 export type TFilter = z.infer<typeof filterSchema>;

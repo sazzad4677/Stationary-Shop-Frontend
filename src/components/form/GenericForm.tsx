@@ -22,6 +22,7 @@ import {PasswordField} from "@/components/form/fields/PasswordField.tsx";
 import {SliderField} from "@/components/form/fields/Slider.tsx";
 import SearchField from "@/components/form/fields/SearchField.tsx";
 import CheckBoxField from "@/components/form/fields/CheckBoxField.tsx";
+import TextAreaField from "@/components/form/fields/TextAreaField.tsx";
 
 // eslint-disable-next-line
 export type TGenericFormRef<TFormValues extends FieldValues = any> = {
@@ -74,6 +75,7 @@ export const GenericForm = <TSchema extends ZodType>(props: TGenericFormProvider
 
 GenericForm.displayName = 'GenericForm'
 GenericForm.Text = TextField
+GenericForm.TextArea = TextAreaField
 GenericForm.Select = SelectField
 GenericForm.Reset = FormReset
 GenericForm.Date = DateField
