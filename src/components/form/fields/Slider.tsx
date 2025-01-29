@@ -23,7 +23,7 @@ export const SliderField = <T extends FieldValues>({
                                                        label,
                                                        className,
                                                        onChange,
-                                                       max = 100,
+                                                       max = 0,
                                                        min = 0,
                                                        step = 1,
                                                        defaultValue = [25, 75],
@@ -63,7 +63,7 @@ export const SliderField = <T extends FieldValues>({
                             <Input
                                 id="from"
                                 type="number"
-                                value={field.value[0] ?? defaultValue[0]}
+                                value={field.value[0]}
                                 onChange={(event) => {
                                     const newValue = Number(event.target.value);
                                     const boundedValue = Math.min(max, Math.max(min, newValue));
@@ -82,7 +82,7 @@ export const SliderField = <T extends FieldValues>({
                             <Input
                                 id="to"
                                 type="number"
-                                value={field.value[1] ?? defaultValue[1]} // Second value of the range
+                                value={field.value[1]}
                                 onChange={(event) => {
                                     const newValue = Number(event.target.value);
                                     const boundedValue = Math.min(max, Math.max(min, newValue));

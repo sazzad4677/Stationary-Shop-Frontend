@@ -21,6 +21,7 @@ import ImageField from "@/components/form/fields/ImageField.tsx";
 import {PasswordField} from "@/components/form/fields/PasswordField.tsx";
 import {SliderField} from "@/components/form/fields/Slider.tsx";
 import SearchField from "@/components/form/fields/SearchField.tsx";
+import CheckBoxField from "@/components/form/fields/CheckBoxField.tsx";
 
 // eslint-disable-next-line
 export type TGenericFormRef<TFormValues extends FieldValues = any> = {
@@ -30,6 +31,7 @@ export type TGenericFormRef<TFormValues extends FieldValues = any> = {
     getValues: () => TFormValues,
     setValue: (name: Path<TFormValues>, value: TFormValues[Path<TFormValues>]) => void,
     reset: (values?: Partial<TFormValues> | undefined) => void,
+    watch: (field: Path<TFormValues>) => TFormValues[Path<TFormValues>],
 }
 
 type TGenericFormProviderProps<TSchema extends ZodType> = {
@@ -48,7 +50,7 @@ export const GenericForm = <TSchema extends ZodType>(props: TGenericFormProvider
     const form = useForm<TFormValues>({
         mode,
         resolver: zodResolver(schema),
-        defaultValues: initialValues as DefaultValues<TFormValues>
+        defaultValues: initialValues as DefaultValues<TFormValues>,
     })
     useImperativeHandle(ref, () => ({
         control: form.control,
@@ -57,8 +59,8 @@ export const GenericForm = <TSchema extends ZodType>(props: TGenericFormProvider
         getValues: form.getValues,
         setValue: form.setValue,
         reset: form.reset,
+        watch: form.watch,
     }))
-
     return (
         <GenericFormContext.Provider value={{control: form.control}}>
             <Form {...form}>
@@ -79,3 +81,4 @@ GenericForm.Image = ImageField
 GenericForm.PasswordField = PasswordField
 GenericForm.SliderField = SliderField
 GenericForm.SearchField = SearchField
+GenericForm.Checkbox = CheckBoxField

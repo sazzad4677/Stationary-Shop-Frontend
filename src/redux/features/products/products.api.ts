@@ -1,15 +1,23 @@
 import {baseApi} from "@/redux/api/baseApi.ts";
 import {TProduct} from "@/pages/Products";
+import {queryMetaData} from "@/types/globals.ts";
 
 const productApi = baseApi.injectEndpoints({
     endpoints: (builder) => ({
         getProducts: builder.query({
-            query: () => ({
-                url: "/products",
-                method: "GET",
-            }),
-            transformResponse: (response: { data: TProduct[] }) => {
-                return response.data;
+            query: (query) => {
+                const params = new URLSearchParams(query);
+                return {
+                    url: `/products`,
+                    method: "GET",
+                    params: params,
+                }
+            },
+            transformResponse: (response: { data: TProduct[], meta: queryMetaData }) => {
+                return {
+                    data: response.data,
+                    meta: response.meta,
+                };
             },
         }),
     }),
