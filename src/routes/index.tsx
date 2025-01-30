@@ -11,6 +11,10 @@ import ProductDetailsPage from "@/pages/ProductDetails";
 import PrivateRoute from "@/routes/PrivateRoute.tsx";
 import NotFound from "@/pages/NotFound";
 import ProfilePage from "@/pages/Profile";
+import ProtectedRoute from "@/routes/ProtectedRoute.tsx";
+import Dashboard from "@/pages/Dashboard";
+import UsersPage from "@/pages/Dashboard/Users.component.tsx";
+import ProductsPage from "@/pages/Dashboard/Products.component.tsx";
 
 const router = createBrowserRouter([
     {
@@ -43,7 +47,7 @@ const router = createBrowserRouter([
             },
             {
                 path: "cart",
-                element: <PrivateRoute/> ,
+                element: <PrivateRoute/>,
                 children: [
                     {
                         index: true,
@@ -62,12 +66,44 @@ const router = createBrowserRouter([
                 ]
             },
             {
+                path: "dashboard",
+                element: <ProtectedRoute allowedRoles={["admin"]}/>,
+                children: [
+                    {
+                        index: true,
+                        element: <Dashboard/>
+                    },
+                    {
+                        path: "admin/users",
+                        element: <UsersPage/>
+                    },
+                    {
+                        path: "admin/products",
+                        element: <ProductsPage/>
+                    }
+                ]
+            },
+            {
+                path: "dashboard",
+                element: <ProtectedRoute allowedRoles={["admin"]}/>,
+                children: [
+                    {
+                        index: true,
+                        element: <Dashboard/>
+                    },
+                    {
+                        path: "admin/users",
+                        element: <UsersPage/>
+                    }
+                ]
+            },
+            {
                 path: "order-placed",
                 element: <OrderPlaced/>
             },
             {
                 path: "*",
-                element: <NotFound />,
+                element: <NotFound/>,
             },
 
         ]

@@ -1,6 +1,7 @@
 import {baseApi} from "@/redux/api/baseApi.ts";
 import {queryMetaData} from "@/types/globals.ts";
 import {TUserProfile} from "@/redux/features/profile/profile.type.ts";
+import {Tags} from "@/constants/global.ts";
 
 const profileApi = baseApi.injectEndpoints({
     endpoints: (builder) => ({
@@ -13,8 +14,17 @@ const profileApi = baseApi.injectEndpoints({
             },
             transformResponse: (response: { data: TUserProfile, meta: queryMetaData }) => {
                 return response.data;
-            }
+            },
+            providesTags: [Tags.UpdateProfile],
         }),
+        updateMyProfile: builder.mutation({
+            query: (userInfo) => ({
+                url: `/user/me`,
+                method: "PATCH",
+                body: userInfo
+            }),
+            invalidatesTags: [Tags.UpdateProfile],
+        })
     }),
 })
-export const {useGetProfileQuery} = profileApi;
+export const {useGetProfileQuery, useUpdateMyProfileMutation} = profileApi;

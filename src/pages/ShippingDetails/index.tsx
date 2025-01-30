@@ -4,11 +4,11 @@ import {shippingDetailsSchema, TShippingDetails} from "@/pages/ShippingDetails/s
 import {GenericForm} from "@/components/form/GenericForm.tsx";
 import {useAppDispatch, useAppSelector} from "@/redux/hooks.ts";
 import {usePlaceOrderMutation} from "@/redux/features/order/order.api.ts";
-import {selectUser } from "@/redux/features/auth/auth.slice.ts";
+import {selectUser} from "@/redux/features/auth/auth.slice.ts";
 import toast from "react-hot-toast";
 import {resetCart} from "@/redux/features/cart/cart.slice.ts";
 import {useNavigate} from "react-router";
-import {useGetCountryQueryQuery} from "@/redux/api/countryInfo.api.ts";
+import {useGetCountryQueryQuery} from "@/redux/services/countryInfo.api.ts";
 
 const initialValues: TShippingDetails = {
     fullName: "",
@@ -29,12 +29,12 @@ const ShippingDetails = () => {
     const totalPrice = useAppSelector((state) => state.cart.totalPrice);
     const user = useAppSelector(selectUser)
     const {data: countryData} = useGetCountryQueryQuery(undefined)
-    const countryOptions = countryData?.map((item: {name: string}) => ({
+    const countryOptions = countryData?.map((item: { name: string }) => ({
         label: item.name,
         value: item.name,
     }))
     const onSubmit = async (values: TShippingDetails) => {
-        const { addressLine1, addressLine2, city, state, zipCode, country} = values
+        const {addressLine1, addressLine2, city, state, zipCode, country} = values
         const orderData = {
             shippingAddress: {
                 address1: addressLine1,
@@ -52,7 +52,6 @@ const ShippingDetails = () => {
             }),
             totalPrice,
         }
-
         try {
             await toast.promise(
                 (async () => {

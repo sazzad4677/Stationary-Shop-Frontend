@@ -11,7 +11,8 @@ import {
 } from 'redux-persist';
 import storage from 'redux-persist/lib/storage'
 import cartSlice from "@/redux/features/cart/cart.slice.ts";
-import {countryApi} from "@/redux/api/countryInfo.api.ts";
+import {countryApi} from "@/redux/services/countryInfo.api.ts";
+import {openAiApi} from "@/redux/services/openAiApi.ts";
 const persistAuthConfig = {
     key: 'auth',
     storage,
@@ -28,6 +29,7 @@ export const store = configureStore({
     reducer: {
         [baseApi.reducerPath]: baseApi.reducer,
         [countryApi.reducerPath]: countryApi.reducer,
+        [openAiApi.reducerPath]: openAiApi.reducer,
         auth: persistedAuthReducer,
         cart: persistedCartReducer,
     },
@@ -35,7 +37,7 @@ export const store = configureStore({
         serializableCheck: {
             ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
         },
-    }).concat(baseApi.middleware, countryApi.middleware),
+    }).concat(baseApi.middleware, countryApi.middleware, openAiApi.middleware),
 })
 
 // Infer the `RootState` and `AppDispatch` types from the store itself

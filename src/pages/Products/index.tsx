@@ -9,7 +9,7 @@ import {useGetProductsQuery} from "@/redux/features/products/products.api.ts";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover.tsx";
 import {useDebounce} from "@/hooks/useDebounce.tsx";
 import {DynamicPagination} from "@/components/features/DynamicPagination.tsx";
-import stationeryCategories from "@/constants/global.ts";
+import {productCategories} from "@/constants/global.ts";
 
 export interface TProduct {
     _id: string
@@ -43,7 +43,7 @@ export default function AllProductsPage() {
         sortBy: initialValues.sortBy,
     });
     const {data: productData} = useGetProductsQuery(query)
-    const categoryOptions = stationeryCategories.map((category) => ({
+    const categoryOptions = productCategories.map((category) => ({
         value: category,
         label: category,
     }));

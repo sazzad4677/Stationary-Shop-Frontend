@@ -1,6 +1,7 @@
 import {baseApi} from "@/redux/api/baseApi.ts";
 import {TProduct} from "@/pages/Products";
 import {queryMetaData} from "@/types/globals.ts";
+import {Tags} from "@/constants/global.ts";
 
 const productApi = baseApi.injectEndpoints({
     endpoints: (builder) => ({
@@ -20,8 +21,9 @@ const productApi = baseApi.injectEndpoints({
                 };
             },
             keepUnusedDataFor: 0,
+            providesTags: [Tags.Product]
         }),
-        getSingleProduct:  builder.query({
+        getSingleProduct: builder.query({
             query: (productId) => {
                 return {
                     url: `/products/${productId}`,
@@ -30,8 +32,12 @@ const productApi = baseApi.injectEndpoints({
             },
             transformResponse: (response: { data: TProduct }) => {
                 return response.data;
-            }
-        })
+            },
+            keepUnusedDataFor: 0,
+        }),
     }),
 })
-export const {useGetProductsQuery, useGetSingleProductQuery} = productApi;
+export const {
+    useGetProductsQuery,
+    useGetSingleProductQuery,
+} = productApi;

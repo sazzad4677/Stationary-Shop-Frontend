@@ -1,10 +1,26 @@
-const stationeryCategories: string[] = [
-    "Writing Instruments",
-    "Paper Products",
-    "Office Supplies",
-    "Art Supplies",
-    "Organizational Tools",
-    "Adhesives",
+export const productCategories: string[] = [
+    "Notebooks",
+    "Pens",
+    "Pencils",
+    "Markers",
+    "Highlighters",
+    "Erasers",
+    "Sharpeners",
+    "Rulers",
+    "Staplers",
+    "Paper Clips",
+    "Sticky Notes",
+    "Folders",
+    "Binders",
+    "Scissors",
+    "Glue",
+    "Tapes",
 ] as const;
 
-export default stationeryCategories;
+export const Tags = {
+    UpdateProfile: "UpdateProfile",
+    Product: "Product",
+    USER: "USER",
+} as const;
+
+export const limitPerPage = [5, 10, 20, 50]

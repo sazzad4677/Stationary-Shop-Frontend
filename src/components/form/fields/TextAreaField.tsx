@@ -4,7 +4,7 @@ import {FormControl, FormField, FormLabel, FormItem, FormMessage} from "@/compon
 import {ReactNode} from "react";
 import {cn} from "@/lib/utils.ts";
 import {Button} from "@/components/ui/button.tsx";
-import {X} from "lucide-react";
+import {AudioLines, X} from "lucide-react";
 import {Textarea} from "@/components/ui/textarea.tsx";
 import LoadingSpinner from "@/components/ui/loadingSpinner.tsx";
 
@@ -22,6 +22,8 @@ export type TextAreaFieldProps<T extends FieldValues> = {
     action?: () => void;
     resizeable?: boolean;
     autoResize?: boolean;
+    ai?: boolean;
+    aiAction?: () => void;
 }
 
 /**
@@ -41,6 +43,7 @@ export type TextAreaFieldProps<T extends FieldValues> = {
  * @prop {string} [inputClassName] - Additional CSS classes for styling the input field itself.
  * @prop {boolean} [disabled] - If true, the input field is disabled.
  * @prop {() => void} [action] - Optional action triggered when the button inside the input is clicked. If present, a button is displayed inside the input.
+ * @prop {boolean}[ai] - if Ai allowed to generate
  */
 
 const TextAreaField = <T extends FieldValues>({
@@ -56,6 +59,8 @@ const TextAreaField = <T extends FieldValues>({
                                                   disabled,
                                                   action,
                                                   resizeable = false,
+                                                  ai = false,
+                                                  aiAction
                                               }: TextAreaFieldProps<T>) => {
     const control = useGenericFormContext<T>();
     return (
@@ -64,18 +69,21 @@ const TextAreaField = <T extends FieldValues>({
             name={name}
             render={({field}) => (
                 <FormItem className={cn(className)}>
-                    {label &&
-                        <FormLabel>
-                            <span>{label}</span>
-                            {required && <span className={"text-destructive"}>*</span>}
-                        </FormLabel>}
+                    <div className={"flex justify-between items-center mt-1"}>
+                        {label &&
+                            <FormLabel>
+                                <span>{label}</span>
+                                {required && <span className={"text-destructive"}>*</span>}
+                            </FormLabel>}
+                        {ai && <Button type={"button"} onClick={aiAction} variant={"ghost"}><AudioLines/> Generate {label}</Button>}
+                    </div>
                     <FormControl>
                         <div className={"relative flex items-center gap-2"}>
                             <Textarea
                                 placeholder={placeholder} {...field}
                                 className={cn(`w-full ${inputClassName}`, action && "pr-12", resizeable === false && "resize-none")}
                                 id={name}
-                                disabled={disabled} />
+                                disabled={disabled}/>
                             {loading && <LoadingSpinner className={"absolute right-4"}/>}
                             {
                                 action && (

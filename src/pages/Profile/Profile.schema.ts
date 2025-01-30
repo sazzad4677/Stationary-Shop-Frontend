@@ -11,6 +11,6 @@ export const shippingAddressSchema = z.object({
 
 export const ProfileSchema = z.object({
     shippingAddress: shippingAddressSchema,
-    name: z.string(),
-    email: z.string(),
+    name: z.string().min(1, { message: "Name is required" }),
+    email: z.string().email({ message: "Email is invalid" }).min(1, { message: "Email is required" }),
 })

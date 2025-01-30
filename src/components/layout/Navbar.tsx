@@ -158,6 +158,7 @@ const Navbar = () => {
                             )}
                         </Link>
                     </Button>
+                    {/*<ModeToggle />*/}
                 </div>
 
                 {/* Mobile Menu */}
@@ -216,6 +217,9 @@ const Navbar = () => {
                                         onClick={handleSheetClose}>
                                     <Link to="/about">About Us</Link>
                                 </Button>
+                                {/*<div className="flex justify-center mt-4">*/}
+                                {/*    <ModeToggle />*/}
+                                {/*</div>*/}
                             </div>
                         </SheetContent>
                     </Sheet>

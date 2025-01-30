@@ -23,6 +23,7 @@ import {SliderField} from "@/components/form/fields/Slider.tsx";
 import SearchField from "@/components/form/fields/SearchField.tsx";
 import CheckBoxField from "@/components/form/fields/CheckBoxField.tsx";
 import TextAreaField from "@/components/form/fields/TextAreaField.tsx";
+import SwitchField from "@/components/form/fields/SwitchField.tsx";
 
 // eslint-disable-next-line
 export type TGenericFormRef<TFormValues extends FieldValues = any> = {
@@ -84,3 +85,4 @@ GenericForm.PasswordField = PasswordField
 GenericForm.SliderField = SliderField
 GenericForm.SearchField = SearchField
 GenericForm.Checkbox = CheckBoxField
+GenericForm.Switch = SwitchField
