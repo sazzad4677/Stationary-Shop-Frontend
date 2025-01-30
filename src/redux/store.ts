@@ -11,6 +11,7 @@ import {
 } from 'redux-persist';
 import storage from 'redux-persist/lib/storage'
 import cartSlice from "@/redux/features/cart/cart.slice.ts";
+import {countryApi} from "@/redux/api/countryInfo.api.ts";
 const persistAuthConfig = {
     key: 'auth',
     storage,
@@ -26,6 +27,7 @@ const persistedCartReducer = persistReducer(persistCartConfig, cartSlice)
 export const store = configureStore({
     reducer: {
         [baseApi.reducerPath]: baseApi.reducer,
+        [countryApi.reducerPath]: countryApi.reducer,
         auth: persistedAuthReducer,
         cart: persistedCartReducer,
     },
@@ -33,7 +35,7 @@ export const store = configureStore({
         serializableCheck: {
             ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
         },
-    }).concat(baseApi.middleware),
+    }).concat(baseApi.middleware, countryApi.middleware),
 })
 
 // Infer the `RootState` and `AppDispatch` types from the store itself

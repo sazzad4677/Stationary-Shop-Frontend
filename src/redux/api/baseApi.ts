@@ -3,6 +3,7 @@ import {
     fetchBaseQuery
 } from "@reduxjs/toolkit/query/react";
 import {RootState} from "@/redux/store.ts";
+import {logout} from "@/redux/features/auth/auth.slice.ts";
 
 const baseQuery = fetchBaseQuery({
     baseUrl:import.meta.env.VITE_API_URL,
@@ -16,8 +17,16 @@ const baseQuery = fetchBaseQuery({
     }
 })
 
+const baseQueryWithReauth = async (args: any, api: any, extraOptions: any) => {
+    let result = await baseQuery(args, api, extraOptions);
+    if (result.error && result.error.status === 401) {
+        api.dispatch(logout());
+    }
+    return result;
+};
+
 export const baseApi = createApi({
     reducerPath: 'baseApi',
-    baseQuery,
+    baseQuery: baseQueryWithReauth,
     endpoints: () => ({}),
 })

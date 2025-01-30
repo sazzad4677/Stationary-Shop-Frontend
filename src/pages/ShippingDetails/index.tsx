@@ -2,13 +2,13 @@ import {Button} from "@/components/ui/button.tsx"
 import {Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter} from "@/components/ui/card.tsx"
 import {shippingDetailsSchema, TShippingDetails} from "@/pages/ShippingDetails/shippingDetails.schema.ts";
 import {GenericForm} from "@/components/form/GenericForm.tsx";
-import {useEffect, useState} from "react";
 import {useAppDispatch, useAppSelector} from "@/redux/hooks.ts";
 import {usePlaceOrderMutation} from "@/redux/features/order/order.api.ts";
 import {selectUser } from "@/redux/features/auth/auth.slice.ts";
 import toast from "react-hot-toast";
 import {resetCart} from "@/redux/features/cart/cart.slice.ts";
 import {useNavigate} from "react-router";
+import {useGetCountryQueryQuery} from "@/redux/api/countryInfo.api.ts";
 
 const initialValues: TShippingDetails = {
     fullName: "",
@@ -20,18 +20,19 @@ const initialValues: TShippingDetails = {
     country: "",
     email: ""
 }
-type TCountry = {
-    label: "",
-    value: ""
-}
+
 const ShippingDetails = () => {
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
-    const [countries, setCountries] = useState<TCountry[]>([])
     const [orderItem] = usePlaceOrderMutation(undefined)
     const cartItems = useAppSelector((state) => state.cart.items);
     const totalPrice = useAppSelector((state) => state.cart.totalPrice);
     const user = useAppSelector(selectUser)
+    const {data: countryData} = useGetCountryQueryQuery(undefined)
+    const countryOptions = countryData?.map((item: {name: string}) => ({
+        label: item.name,
+        value: item.name,
+    }))
     const onSubmit = async (values: TShippingDetails) => {
         const { addressLine1, addressLine2, city, state, zipCode, country} = values
         const orderData = {
@@ -71,25 +72,7 @@ const ShippingDetails = () => {
             toast.error('Something went wrong! Please try again.', {id: 'order-placed'});
         }
     }
-    useEffect(() => {
-        const getCountryList = async () => {
-            const countries = await fetch("https://data-api.oxilor.com/rest/countries", {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${import.meta.env.VITE_COUNTRY_API_AUTH_KEY}`
-                }
-            }).then(res => res.json())
-            const countryOptions = countries.map((country: { name: string; }) => {
-                return {
-                    label: country.name,
-                    value: country.name
-                }
-            })
-            setCountries(countryOptions)
-        }
-        getCountryList()
-    }, [])
+
     return (
         <GenericForm initialValues={{
             ...initialValues,
@@ -145,7 +128,7 @@ const ShippingDetails = () => {
                                     required
                                     placeholder={"Country"}
                                     label={"Country"}
-                                    options={countries}
+                                    options={countryOptions || []}
                                 />
                                 <GenericForm.Select
                                     <TShippingDetails>

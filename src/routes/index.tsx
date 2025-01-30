@@ -10,6 +10,7 @@ import OrderPlaced from "@/pages/OrderPlaced";
 import ProductDetailsPage from "@/pages/ProductDetails";
 import PrivateRoute from "@/routes/PrivateRoute.tsx";
 import NotFound from "@/pages/NotFound";
+import ProfilePage from "@/pages/Profile";
 
 const router = createBrowserRouter([
     {
@@ -47,6 +48,16 @@ const router = createBrowserRouter([
                     {
                         index: true,
                         element: <CartPage/>
+                    }
+                ]
+            },
+            {
+                path: "profile",
+                element: <PrivateRoute/>,
+                children: [
+                    {
+                        index: true,
+                        element: <ProfilePage/>
                     }
                 ]
             },
