@@ -33,16 +33,16 @@ const ShippingDetails = () => {
     const totalPrice = useAppSelector((state) => state.cart.totalPrice);
     const user = useAppSelector(selectUser)
     const onSubmit = async (values: TShippingDetails) => {
-        const {fullName, addressLine1, addressLine2, city, state, zipCode, country, email} = values
+        const { addressLine1, addressLine2, city, state, zipCode, country} = values
         const orderData = {
-            fullName,
-            email,
-            address1: addressLine1,
-            address2: addressLine2,
-            city,
-            state,
-            zipCode,
-            country,
+            shippingAddress: {
+                address1: addressLine1,
+                address2: addressLine2,
+                city,
+                state,
+                zipCode,
+                country,
+            },
             products: cartItems.map((item) => {
                 return {
                     productId: item._id,
@@ -55,7 +55,7 @@ const ShippingDetails = () => {
         try {
             await toast.promise(
                 (async () => {
-                    orderItem(orderData).unwrap();
+                    await orderItem(orderData).unwrap();
                     dispatch(resetCart());
                     navigate("/order-placed");
                 })(),
@@ -63,11 +63,12 @@ const ShippingDetails = () => {
                     loading: 'Loading...',
                     success: 'Order Placed Successfully!',
                     error: (err: { data: { message: string; }; }) => err?.data?.message,
-                }
+                },
+                {id: 'order-placed'}
             );
         } catch (error) {
             console.error('An error occurred:', error);
-            toast.error('Something went wrong! Please try again.');
+            toast.error('Something went wrong! Please try again.', {id: 'order-placed'});
         }
     }
     useEffect(() => {

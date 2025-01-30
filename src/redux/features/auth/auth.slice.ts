@@ -3,7 +3,7 @@ import {RootState} from "@/redux/store.ts";
 import { jwtDecode } from "jwt-decode";
 
 export type TUser = {
-    userId: string,
+    _id: string,
     role: string,
     name: string,
     email: string,

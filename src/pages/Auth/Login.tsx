@@ -46,11 +46,14 @@ const LoginForm = () => {
                     loading: 'Loading...',
                     success: 'Successfully logged in',
                     error: (err: { data: { message: string; }; }) => err?.data?.message,
+                },
+                {
+                    id: 'login',
                 }
             );
         } catch (error) {
             console.error('An error occurred:', error);
-            toast.error('Something went wrong! Please try again.');
+            toast.error('Something went wrong! Please try again.', {id: 'login',});
         }
     };
 
