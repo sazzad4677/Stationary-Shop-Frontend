@@ -1,16 +1,17 @@
 import Table from "@/components/features/Table.tsx";
-import { Switch } from "@/components/ui/switch"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import {Switch} from "@/components/ui/switch"
+import {Badge} from "@/components/ui/badge"
+import {Avatar, AvatarFallback} from "@/components/ui/avatar"
+import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card"
 import {Layout} from "@/components/layout/DashboardLayout.tsx";
 import {useBlockUserMutation, useGetAllUsersQuery} from "@/redux/features/admin/users/users.api.ts";
 import {handleToastPromise} from "@/utils/handleToastPromise.ts";
-import {Input} from "@/components/ui/input.tsx";
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select.tsx";
-import {useEffect, useState} from "react";
-import {limitPerPage} from "@/constants/global.ts";
+import {useState} from "react";
 import {Button} from "@/components/ui/button.tsx";
+import {DownloadCloudIcon} from "lucide-react";
+import exportToExcel from "@/utils/exportToExcel.ts";
+import {cn} from "@/lib/utils.ts";
+import {TUser} from "@/redux/features/auth/auth.slice.ts";
 
 export interface IUser {
     _id: string;
@@ -26,26 +27,25 @@ export interface IUser {
         state: string;
         country: string;
         zipCode: string;
-    }
+    },
+    createdAt: string;
+    updatedAt: string;
+    __v: number;
 }
 
 export default function UsersPage() {
     const [blockUser, {isLoading}] = useBlockUserMutation(undefined)
-    const [searchTerm, setSearchTerm] = useState("")
-    const [currentPage, setCurrentPage] = useState(1)
-    const [limit, setLimit] = useState(10)
-    const [sortBy, setSortBy] = useState("-createdAt")
     const [query, setQuery] = useState<Record<string, unknown>>({
-        page: currentPage,
-        limit: limit,
-        sortBy: sortBy,
-        search: searchTerm,
+        page: 1,
+        limit: 10,
+        sortBy: "-createdAt",
+        search: "",
     })
     const {data: users, isFetching} = useGetAllUsersQuery(query)
     const toggleBlockStatus = async (userId: string) => {
         await handleToastPromise(
             async () => {
-               await blockUser(userId).unwrap();
+                await blockUser(userId).unwrap();
             },
             {
                 loading: "Loading...",
@@ -62,17 +62,16 @@ export default function UsersPage() {
         {
             label: "User",
             key: "name",
-            render: (name: string, user: IUser) => (
+            render: (name: string) => (
                 <div className="flex items-center gap-3">
                     <Avatar>
-                        <AvatarImage src={`https://avatar.vercel.sh/${user.email}`} />
                         <AvatarFallback>{name.charAt(0)}</AvatarFallback>
                     </Avatar>
                     {name}
                 </div>
             ),
         },
-        { label: "Email", key: "email" },
+        {label: "Email", key: "email"},
         {
             label: "Status",
             key: "isBlocked",
@@ -82,85 +81,44 @@ export default function UsersPage() {
                 </Badge>
             ),
         },
-        {
-            label: "Actions",
-            key: "actions",
-            render: (_: unknown, user: IUser) => (
-                <Switch checked={!user.isBlocked} onCheckedChange={async() => await toggleBlockStatus(user._id)} />
-            ),
-        },
     ]
 
-    useEffect(() => {
-        setQuery({
-            page: currentPage,
-            limit: limit,
-            sortBy: sortBy,
-            search: searchTerm,
-        })
-    }, [currentPage, limit, sortBy, searchTerm])
 
-    const handleSort = (column: string) => {
-        if (sortBy === column) {
-            setSortBy(`-${column}`)
-        } else {
-            setSortBy(column)
-        }
-    }
+    const handleExport = () => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const exportData = users?.data.map(({_id, createdAt, updatedAt, __v, ...rest}: IUser) => rest);
+        exportToExcel<TUser>(exportData, 'Users');
+    };
 
 
     return (
         <Layout>
             <Card>
                 <CardHeader>
-                    <CardTitle>User Management</CardTitle>
+                    <CardTitle>
+
+                        <Button onClick={handleExport} variant="default" size="sm"
+                                className="flex items-center gap-1"><DownloadCloudIcon/>Export</Button>
+
+                    </CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div className="flex justify-between items-center mb-4">
-                        <Input
-                            placeholder="Search Users..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="max-w-sm"
-                        />
-                        <Select value={limit.toString()} onValueChange={(value) => setLimit(Number(value))}>
-                            <SelectTrigger className="w-[180px]">
-                                <SelectValue placeholder="Select limit"/>
-                            </SelectTrigger>
-                            <SelectContent>
-                                {
-                                    limitPerPage.map((item, key) => (
-                                        <SelectItem key={key} value={item.toString()}>{item} per page</SelectItem>
-                                    ))
-                                }
-                            </SelectContent>
-                        </Select>
-                    </div>
                     <Table<IUser>
                         data={users?.data || []}
                         columns={columns}
+                        allowPagination
+                        allowSearch
+                        allowSorting
                         isLoading={isFetching || isLoading}
-                        emptyMessage="No users found"
-                        onSort={handleSort}
+                        totalEntries={users?.meta?.total}
+                        onQueryChange={setQuery}
+                        emptyMessage="No products found"
+                        actions={(user) => (
+                            <Switch className={cn(!user.isBlocked ? "!bg-primary-foreground" : "bg-primary")}
+                                    checked={!user.isBlocked}
+                                    onCheckedChange={async () => await toggleBlockStatus(user._id)}/>)}
                     />
-                    <div className="flex justify-between items-center mt-4">
-                        <div>
-                            Showing {(currentPage - 1) * limit + 1} to {Math.min(currentPage * limit, users?.meta?.total || 0)} of{" "}
-                            {users?.meta?.total || 0} entries
-                        </div>
-                        <div className="flex gap-2">
-                            <Button onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                                    disabled={currentPage === 1}>
-                                Previous
-                            </Button>
-                            <Button
-                                onClick={() => setCurrentPage((prev) => prev + 1)}
-                                disabled={currentPage * limit >= (users?.meta?.total || 0)}
-                            >
-                                Next
-                            </Button>
-                        </div>
-                    </div>
+
                 </CardContent>
             </Card>
         </Layout>

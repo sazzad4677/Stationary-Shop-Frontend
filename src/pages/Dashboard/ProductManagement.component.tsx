@@ -1,4 +1,11 @@
-import {Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger} from "@/components/ui/dialog.tsx";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger
+} from "@/components/ui/dialog.tsx";
 import {Button} from "@/components/ui/button.tsx";
 import {Plus} from "lucide-react";
 import {GenericForm, TGenericFormRef} from "@/components/form/GenericForm.tsx";
@@ -40,9 +47,9 @@ const ProductManagement = ({
                            }: TProductManageProps) => {
     const formRef = useRef<TGenericFormRef<TProduct>>(null)
     const [generateDescription, {isLoading}] = useGenerateDescriptionMutation();
-    const [addProduct, {isLoading: isAddProductLoading}] = useCreateProductMutation(undefined)
+    const [addProduct, {isLoading: isAddProductLoading,}] = useCreateProductMutation(undefined)
     const [updateProduct, {isLoading: isUpdateProductLoading}] = useUpdateProductMutation(undefined);
-    const {data} = useGetSingleProductQuery(editingProduct);
+    const {data, refetch} = useGetSingleProductQuery(editingProduct, {skip: !editingProduct,});
     const categoryOptions = productCategories.map((item) => ({
         label: item,
         value: item,
@@ -108,6 +115,12 @@ const ProductManagement = ({
         }
     }
     useEffect(() => {
+        if (editingProduct) {
+            refetch();
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [editingProduct]);
+    useEffect(() => {
         if (data && formRef.current) {
             const {name, brand, price, category, description, quantity, inStock} = data;
             const newInitialValues = {
@@ -149,6 +162,7 @@ const ProductManagement = ({
                 <DialogHeader>
                     <DialogTitle>{editingProduct ? "Edit Product" : "Add New Product"}</DialogTitle>
                 </DialogHeader>
+                <DialogDescription/>
                 <GenericForm ref={formRef} onSubmit={onSubmit} initialValues={initialValues} schema={productSchema}>
                     <div className="space-y-2 mb-2">
                         <GenericForm.Text<TProduct> label="Name" name="name" placeholder="Product Name" required/>

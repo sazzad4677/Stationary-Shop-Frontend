@@ -15,6 +15,7 @@ import ProtectedRoute from "@/routes/ProtectedRoute.tsx";
 import Dashboard from "@/pages/Dashboard";
 import UsersPage from "@/pages/Dashboard/Users.component.tsx";
 import ProductsPage from "@/pages/Dashboard/Products.component.tsx";
+import OrdersPage from "@/pages/Dashboard/Orders.components.tsx";
 
 const router = createBrowserRouter([
     {
@@ -80,23 +81,13 @@ const router = createBrowserRouter([
                     {
                         path: "admin/products",
                         element: <ProductsPage/>
-                    }
-                ]
-            },
-            {
-                path: "dashboard",
-                element: <ProtectedRoute allowedRoles={["admin"]}/>,
-                children: [
-                    {
-                        index: true,
-                        element: <Dashboard/>
+                    },{
+                        path: "admin/orders",
+                        element: <OrdersPage/>
                     },
-                    {
-                        path: "admin/users",
-                        element: <UsersPage/>
-                    }
                 ]
             },
+
             {
                 path: "order-placed",
                 element: <OrderPlaced/>

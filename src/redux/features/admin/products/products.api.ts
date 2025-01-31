@@ -17,7 +17,7 @@ const productApi = baseApi.injectEndpoints({
         updateProduct: builder.mutation({
             query: ({productId, productData}: {
                 productId: string;
-                productData: Omit<TProduct, "_id" | "updatedAt">
+                productData: Omit<TProduct, "_id" | "updatedAt" | "createdAt"| "__v">
             }) => {
                 return {
                     url: `/products/${productId}`,
