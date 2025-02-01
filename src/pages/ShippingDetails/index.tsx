@@ -9,7 +9,6 @@ import toast from "react-hot-toast";
 import {resetCart} from "@/redux/features/cart/cart.slice.ts";
 import {useNavigate} from "react-router";
 import {useGetCountryQueryQuery} from "@/redux/services/countryInfo.api.ts";
-
 const initialValues: TShippingDetails = {
     fullName: "",
     addressLine1: "",
@@ -73,106 +72,107 @@ const ShippingDetails = () => {
     }
 
     return (
-        <GenericForm initialValues={{
-            ...initialValues,
-            email: user?.email || "",
-            fullName: user?.name || "",
-        }} onSubmit={onSubmit} schema={shippingDetailsSchema}>
-            <div className="container mx-auto px-4 py-8">
-                <Card className="w-full max-w-2xl mx-auto">
-                    <CardHeader>
-                        <CardTitle className="text-2xl font-bold">Shipping Details</CardTitle>
-                        <CardDescription>Please confirm your shipping information</CardDescription>
-                    </CardHeader>
-                    <CardContent>
+            <GenericForm initialValues={{
+                ...initialValues,
+                email: user?.email || "",
+                fullName: user?.name || "",
+            }} onSubmit={onSubmit} schema={shippingDetailsSchema}>
+                <div className="container mx-auto px-4 py-8">
+                    <Card className="w-full max-w-2xl mx-auto">
+                        <CardHeader>
+                            <CardTitle className="text-2xl font-bold">Shipping Details</CardTitle>
+                            <CardDescription>Please confirm your shipping information</CardDescription>
+                        </CardHeader>
+                        <CardContent>
 
-                        <div className={"space-y-6"}>
-                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                                <div className={"col-span-1 sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4"}>
+                            <div className={"space-y-6"}>
+                                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                    <div className={"col-span-1 sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4"}>
+                                        <GenericForm.Text
+                                            <TShippingDetails>
+                                            name="fullName"
+                                            required
+                                            label={"Full Name"}
+                                            placeholder={"Enter your full name"}
+                                        />
+                                        <GenericForm.Text
+                                            <TShippingDetails>
+                                            name="email"
+                                            required
+                                            label={"Email"}
+                                            placeholder={"Enter your Email"}
+                                        />
+                                    </div>
+                                    <div className={"col-span-1 sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4"}>
+                                        <GenericForm.TextArea
+                                            <TShippingDetails>
+                                            name="addressLine1"
+                                            required
+                                            label={"Address Line 1"}
+                                            placeholder={"123 Main St"}
+                                            resizeable
+                                        />
+                                        <GenericForm.TextArea
+                                            <TShippingDetails>
+                                            name="addressLine2"
+                                            label={"Address Line 2"}
+                                            placeholder={"Apartment 123"}
+                                            resizeable
+                                        />
+                                    </div>
+                                    <GenericForm.Select
+                                        <TShippingDetails>
+                                        name="country"
+                                        required
+                                        placeholder={"Country"}
+                                        label={"Country"}
+                                        options={countryOptions || []}
+                                    />
+                                    <GenericForm.Select
+                                        <TShippingDetails>
+                                        name="city"
+                                        required
+                                        placeholder={"City"}
+                                        label={"City"}
+                                        options={[{
+                                            label: "New York",
+                                            value: "New York"
+                                        }, {
+                                            label: "Los Angeles",
+                                            value: "Los Angeles"
+                                        }, {
+                                            label: "Chicago",
+                                            value: "Chicago"
+                                        }
+                                        ]}
+                                    />
                                     <GenericForm.Text
                                         <TShippingDetails>
-                                        name="fullName"
+                                        name="state"
+                                        placeholder={"State"}
+                                        label={"State"}
                                         required
-                                        label={"Full Name"}
-                                        placeholder={"Enter your full name"}
                                     />
                                     <GenericForm.Text
                                         <TShippingDetails>
-                                        name="email"
+                                        name="zipCode"
+                                        placeholder={"Zip Code"}
+                                        label={"Zip Code"}
                                         required
-                                        label={"Email"}
-                                        placeholder={"Enter your Email"}
                                     />
-                                </div>
-                                <div className={"col-span-1 sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4"}>
-                                    <GenericForm.TextArea
-                                        <TShippingDetails>
-                                        name="addressLine1"
-                                        required
-                                        label={"Address Line 1"}
-                                        placeholder={"123 Main St"}
-                                        resizeable
-                                    />
-                                    <GenericForm.TextArea
-                                        <TShippingDetails>
-                                        name="addressLine2"
-                                        label={"Address Line 2"}
-                                        placeholder={"Apartment 123"}
-                                        resizeable
-                                    />
-                                </div>
-                                <GenericForm.Select
-                                    <TShippingDetails>
-                                    name="country"
-                                    required
-                                    placeholder={"Country"}
-                                    label={"Country"}
-                                    options={countryOptions || []}
-                                />
-                                <GenericForm.Select
-                                    <TShippingDetails>
-                                    name="city"
-                                    required
-                                    placeholder={"City"}
-                                    label={"City"}
-                                    options={[{
-                                        label: "New York",
-                                        value: "New York"
-                                    }, {
-                                        label: "Los Angeles",
-                                        value: "Los Angeles"
-                                    }, {
-                                        label: "Chicago",
-                                        value: "Chicago"
-                                    }
-                                    ]}
-                                />
-                                <GenericForm.Text
-                                    <TShippingDetails>
-                                    name="state"
-                                    placeholder={"State"}
-                                    label={"State"}
-                                    required
-                                />
-                                <GenericForm.Text
-                                    <TShippingDetails>
-                                    name="zipCode"
-                                    placeholder={"Zip Code"}
-                                    label={"Zip Code"}
-                                    required
-                                />
 
+                                </div>
                             </div>
-                        </div>
 
-                    </CardContent>
-                    <CardFooter>
-                        <Button>Confirm and Continue</Button>
-                    </CardFooter>
-                </Card>
-            </div>
-        </GenericForm>
+                        </CardContent>
+                        <CardFooter>
+                            <Button>Confirm and Continue</Button>
+                        </CardFooter>
+                    </Card>
+                </div>
+            </GenericForm>
     )
 }
+
 
 export default ShippingDetails

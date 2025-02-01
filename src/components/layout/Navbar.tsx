@@ -1,5 +1,5 @@
 import * as React from "react"
-import {ShoppingCart, User, Heart, Menu, LogOut, UserIcon} from "lucide-react"
+import {ShoppingCart, User, Heart, Menu, LogOut } from "lucide-react"
 import {cn} from "@/lib/utils"
 import {Button} from "@/components/ui/button"
 import {
@@ -25,15 +25,16 @@ import {useAppDispatch, useAppSelector} from "@/redux/hooks.ts";
 import {logout, selectUser} from "@/redux/features/auth/auth.slice.ts";
 import {useState} from "react";
 import {useLogoutMutation,} from "@/redux/features/auth/auth.api.ts";
+import {Avatar, AvatarFallback} from "@/components/ui/avatar.tsx";
 
 const Navbar = () => {
     const dispatch = useAppDispatch()
-    const [apiLogout] = useLogoutMutation();
     const [isSheetOpen, setIsSheetOpen] = useState(false);
     const location = useLocation()
     const pathname = location.pathname
     const user = useAppSelector(selectUser)
     const cartCount = useAppSelector((state) => state.cart.totalQuantity);
+    const [apiLogout] = useLogoutMutation();
     const handleLogout = async () => {
         await apiLogout(undefined)
         dispatch(logout())
@@ -107,10 +108,11 @@ const Navbar = () => {
                     {user ? (
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                                    <div className={"rounded-full border p-2"}><UserIcon/></div>
-
-                                </Button>
+                                <Avatar className="h-8 w-8 rounded-full">
+                                    <AvatarFallback>
+                                        {user?.name?.charAt(0) || "U"}
+                                    </AvatarFallback>
+                                </Avatar>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent className="w-56" align="end" forceMount>
                                 <DropdownMenuItem className="font-normal cursor-pointer">
@@ -200,8 +202,8 @@ const Navbar = () => {
                                                 onClick={handleSheetClose}>
                                             <Link to="/profile">Profile</Link>
                                         </Button>
-                                        <Button variant="ghost" onClick={() => {
-                                            handleLogout()
+                                        <Button variant="ghost" onClick={async () => {
+                                            await handleLogout()
                                             handleSheetClose()
                                         }} className="w-full justify-start">
                                             Log Out

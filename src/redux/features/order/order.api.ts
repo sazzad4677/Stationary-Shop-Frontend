@@ -35,7 +35,8 @@ const orderApi = baseApi.injectEndpoints({
                     params: params,
                 }
             },
-            providesTags: [Tags.Order]
+            providesTags: [Tags.Order],
+            keepUnusedDataFor: 0
         }),
         getSingleOrder: builder.query({
             query: (orderId: string) => ({

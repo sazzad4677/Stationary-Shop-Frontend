@@ -15,7 +15,7 @@ type TGenerateResponse = {
 export const openAiApi = createApi({
     reducerPath: "openAiApi",
     baseQuery: fetchBaseQuery({
-        baseUrl: "https://api.openai.com/v1",
+        baseUrl: `https://api.openai.com/v1`,
         prepareHeaders: (headers) => {
             headers.set("Authorization", `Bearer ${OPENAI_API_KEY}`);
             headers.set("Content-Type", "application/json");

@@ -1,13 +1,11 @@
 import {useState} from "react"
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card"
-import {Badge} from "@/components/ui/badge"
 import {Layout} from "@/components/layout/DashboardLayout"
 import Table from "@/components/features/Table.tsx";
 import {useGetOrdersQuery, useUpdateOrderMutation} from "@/redux/features/order/order.api.ts";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select.tsx";
 import {TOrder} from "@/types/order.types.ts";
 import {handleToastPromise} from "@/utils/handleToastPromise.ts";
-import {cn} from "@/lib/utils.ts";
 import {
     DropdownMenu,
     DropdownMenuContent, DropdownMenuItem,
@@ -21,7 +19,6 @@ import {OrderDetailsDialog} from "@/pages/Dashboard/OrderDetails.component.tsx";
 
 export default function OrdersPage() {
     const [viewProduct, setViewProduct] = useState<boolean | string>(false)
-    const [isDialogOpen, setIsDialogOpen] = useState(false)
     const [query, setQuery] = useState<Record<string, unknown>>({
         page: 1,
         limit: 10,
@@ -43,7 +40,7 @@ export default function OrdersPage() {
         {
             label: "Status",
             key: "status",
-            render: (status: string) => {
+            render: (status: string, value:TOrder) => {
                 const statusColors: Record<string, string> = {
                     Pending: "bg-yellow-500 text-white",
                     Processing: "bg-blue-500 text-white",
@@ -52,22 +49,10 @@ export default function OrdersPage() {
                     Refunded: "bg-red-500 text-white",
                 };
                 return (
-                    <Badge
-                        className={cn(`hover:text-white hover:${statusColors[status]}`, statusColors[status] || "bg-gray-500 text-white")}>
-                        {status}
-                    </Badge>
-                );
-            },
-        },
-        {
-            label: "Update Status",
-            key: "status",
-            render: (status: string, value: TOrder) => {
-                return (
                     <Select value={status} onValueChange={async (status) => {
                         await handleUpdateStatus(value._id, status)
                     }}>
-                        <SelectTrigger className={"w-[150px]"}>
+                        <SelectTrigger className={statusColors[status]} value={status}>
                             <SelectValue placeholder="Update Status"/>
                         </SelectTrigger>
                         <SelectContent>
@@ -79,9 +64,9 @@ export default function OrdersPage() {
                             }
                         </SelectContent>
                     </Select>
-                )
+                );
             },
-        }
+        },
     ];
     const handleUpdateStatus = async (orderId: string, status: string) => {
         await handleToastPromise(
