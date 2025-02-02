@@ -9,6 +9,10 @@ import toast from "react-hot-toast";
 import {resetCart} from "@/redux/features/cart/cart.slice.ts";
 import {useNavigate} from "react-router";
 import {useGetCountryQueryQuery} from "@/redux/services/countryInfo.api.ts";
+import {setOrderData} from "@/redux/features/order/order.slice.ts";
+import CheckoutDialog from "@/pages/Checkout";
+import {useState} from "react";
+
 const initialValues: TShippingDetails = {
     fullName: "",
     addressLine1: "",
@@ -22,6 +26,7 @@ const initialValues: TShippingDetails = {
 
 const ShippingDetails = () => {
     const dispatch = useAppDispatch();
+    const [isCheckoutDialogOpen, setIsCheckoutDialogOpen] = useState(false);
     const navigate = useNavigate();
     const [orderItem] = usePlaceOrderMutation(undefined)
     const cartItems = useAppSelector((state) => state.cart.items);
@@ -51,24 +56,26 @@ const ShippingDetails = () => {
             }),
             totalPrice,
         }
-        try {
-            await toast.promise(
-                (async () => {
-                    await orderItem(orderData).unwrap();
-                    dispatch(resetCart());
-                    navigate("/order-placed");
-                })(),
-                {
-                    loading: 'Loading...',
-                    success: 'Order Placed Successfully!',
-                    error: (err: { data: { message: string; }; }) => err?.data?.message,
-                },
-                {id: 'order-placed'}
-            );
-        } catch (error) {
-            console.error('An error occurred:', error);
-            toast.error('Something went wrong! Please try again.', {id: 'order-placed'});
-        }
+        dispatch(setOrderData(orderData));
+        setIsCheckoutDialogOpen(true)
+        // try {
+        //     await toast.promise(
+        //         (async () => {
+        //             await orderItem(orderData).unwrap();
+        //             dispatch(resetCart());
+        //             navigate("/order-placed");
+        //         })(),
+        //         {
+        //             loading: 'Loading...',
+        //             success: 'Order Placed Successfully!',
+        //             error: (err: { data: { message: string; }; }) => err?.data?.message,
+        //         },
+        //         {id: 'order-placed'}
+        //     );
+        // } catch (error) {
+        //     console.error('An error occurred:', error);
+        //     toast.error('Something went wrong! Please try again.', {id: 'order-placed'});
+        // }
     }
 
     return (
@@ -170,6 +177,7 @@ const ShippingDetails = () => {
                         </CardFooter>
                     </Card>
                 </div>
+                <CheckoutDialog isOpen={isCheckoutDialogOpen} setIsOpen={setIsCheckoutDialogOpen} />
             </GenericForm>
     )
 }

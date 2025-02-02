@@ -10,4 +10,12 @@ export interface TOrder {
     status: string
     createdAt: string
     updatedAt: string
+    shippingAddress: {
+        address1: string;
+        address2?: string;
+        city: string;
+        state: string;
+        zipCode: string;
+        country: string;
+    }
 }

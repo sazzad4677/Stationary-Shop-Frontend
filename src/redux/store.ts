@@ -13,6 +13,7 @@ import storage from 'redux-persist/lib/storage'
 import cartSlice from "@/redux/features/cart/cart.slice.ts";
 import {countryApi} from "@/redux/services/countryInfo.api.ts";
 import {openAiApi} from "@/redux/services/openAiApi.ts";
+import orderSlice from "@/redux/features/order/order.slice.ts";
 const persistAuthConfig = {
     key: 'auth',
     storage,
@@ -32,6 +33,7 @@ export const store = configureStore({
         [openAiApi.reducerPath]: openAiApi.reducer,
         auth: persistedAuthReducer,
         cart: persistedCartReducer,
+        order: orderSlice
     },
     middleware: (getDefaultMiddleware) => getDefaultMiddleware({
         serializableCheck: {
