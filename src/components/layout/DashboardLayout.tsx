@@ -85,7 +85,7 @@ export function Layout({children}: LayoutProps) {
                     <SidebarHeader
                         className="flex h-16 items-center border-b border-gray-200 px-6 dark:border-gray-800">
                         <Link className="flex items-center gap-2 font-semibold h-full" to="/dashboard">
-                            <img src="/logo.png" alt="Stationary Shop" className="h-28 w-28"/>
+                            <img src="/logo.png" alt="Stationary Shop" className="h-16"/>
                         </Link>
                     </SidebarHeader>
                     <SidebarContent>

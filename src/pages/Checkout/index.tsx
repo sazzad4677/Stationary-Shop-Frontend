@@ -1,132 +1,131 @@
-import React, {useState, useEffect, Dispatch, SetStateAction} from "react";
-import {Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogFooter} from "@/components/ui/dialog";
-import {Button} from "@/components/ui/button";
-import {useStripe, useElements, CardElement, Elements} from "@stripe/react-stripe-js";
-import {loadStripe} from "@stripe/stripe-js";
-import {useAppDispatch, useAppSelector} from "@/redux/hooks.ts";
-import toast from "react-hot-toast";
-import {resetCart} from "@/redux/features/cart/cart.slice.ts";
-import {useNavigate} from "react-router";
+import {useState} from "react"
+import {ChevronRight, CreditCard, Edit} from "lucide-react"
+import {Button} from "@/components/ui/button"
+import {Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter} from "@/components/ui/card"
+import {Separator} from "@/components/ui/separator"
+import ShippingDetails from "@/pages/ShippingDetails";
+import {handleToastPromise} from "@/utils/handleToastPromise.ts";
+import CheckoutDialog from "@/pages/Checkout/CheckoutDialog.tsx";
 import {usePlaceOrderMutation} from "@/redux/features/order/order.api.ts";
-import {selectToken} from "@/redux/features/auth/auth.slice.ts";
+import {useAppSelector} from "@/redux/hooks.ts";
+import toast from "react-hot-toast";
 
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY as string);
-
-const CheckoutForm = ({clientSecret}: { clientSecret: string }) => {
-    const stripe = useStripe();
-    const elements = useElements();
-    const [isLoading, setIsLoading] = useState(false);
-    const dispatch = useAppDispatch();
-    const navigate = useNavigate();
-    const [orderItem] = usePlaceOrderMutation(undefined)
-    const orderData = useAppSelector(state => state.order.orderData)
-
-    const handleSubmit = async (event: React.FormEvent) => {
-        event.preventDefault();
-        setIsLoading(true);
-
-        if (!stripe || !elements) {
-            alert("Stripe has not loaded properly.");
-            return;
-        }
-
-        const cardElement = elements.getElement(CardElement);
-
-        if (!cardElement) {
-            alert("Card Element has not loaded.");
-            return;
-        }
-
-        const {error, paymentIntent} = await stripe.confirmCardPayment(clientSecret, {
-            payment_method: {
-                card: cardElement,
-            },
-        });
-
-        if (error) {
-            toast.error(`Payment failed: ${error.message}`);
-            setIsLoading(false);
-        } else if (paymentIntent?.status === "succeeded") {
-            toast.success("Payment successful!");
-            setIsLoading(false);
-            try {
-                await toast.promise(
-                    (async () => {
-                        if(orderData === null) return;
-                        await orderItem(orderData).unwrap();
-                        dispatch(resetCart());
-                        navigate("/order-placed");
-                    })(),
-                    {
-                        loading: 'Loading...',
-                        success: 'Order Placed Successfully!',
-                        error: (err: { data: { message: string; }; }) => err?.data?.message,
-                    },
-                    {id: 'order-placed'}
-                );
-            } catch (error) {
-                console.error('An error occurred:', error);
-                toast.error('Something went wrong! Please try again.', {id: 'order-placed'});
-            }
-        }
-    };
-
-    return (
-        <form onSubmit={handleSubmit}>
-            <div className="my-4 border p-4 rounded">
-                <CardElement/>
-            </div>
-            <Button type="submit" disabled={!stripe || isLoading}>
-                {isLoading ? "Processing..." : "Pay Now"}
-            </Button>
-        </form>
-    );
-};
-
-const CheckoutDialog = ({isOpen, setIsOpen}: {isOpen: boolean, setIsOpen: Dispatch<SetStateAction<boolean>>}) => {
-    const [clientSecret, setClientSecret] = useState("");
+export default function CheckoutPage() {
+    const [isEditing, setIsEditing] = useState(false)
+    const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false)
+    const [clientSecret, setClientSecret] = useState<string>("")
+    const [orderItem, {isLoading}] = usePlaceOrderMutation(undefined)
+    const cartItems = useAppSelector((state) => state.cart.items);
     const totalPrice = useAppSelector((state) => state.cart.totalPrice);
-    const user = useAppSelector(selectToken)
-    useEffect(() => {
-        const fetchPaymentIntent = async () => {
-            const response = await fetch("http://localhost:5000/api/orders/create-payment-intent", {
-                method: "POST",
-                headers: {"Content-Type": "application/json", "authorization": `Bearer ${user}`},
-                body: JSON.stringify({amount: Math.round(totalPrice * 100), currency: "usd"}),
-            });
-            const data = await response.json();
-            setClientSecret(data.data);
-        };
-
-        if (isOpen) {
-            (async () => await fetchPaymentIntent())();
+    const placeOrder = async () => {
+        const orderData = {
+            products: cartItems.map((item) => {
+                return {
+                    productId: item._id,
+                    quantity: item.quantity,
+                }
+            }),
+            totalPrice,
         }
-    }, [isOpen]);
-
+        await handleToastPromise(
+            async () => {
+                const {data} = await orderItem(orderData).unwrap();
+                if (!data?.clientSecret) return toast.error("An error occurred during placing the order. Please try again later.");
+                setClientSecret(data?.clientSecret)
+                setIsPaymentDialogOpen(true)
+                // dispatch(resetCart());
+            },
+            {
+                loading: "Placing Order...",
+                success: "Successfully Placed the Order!",
+                error: (err: { data: { message: string } }) =>
+                    err?.data?.message || "An error occurred during update. Please try again later.",
+            },
+            "place-order"
+        );
+    }
+    const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
+    const tax = subtotal * 0.1
+    const total = subtotal + tax
+    const shippingFee = total > 50 ? 0 : Number((total * 0.01).toFixed(2))
     return (
-        <Dialog open={isOpen} onOpenChange={setIsOpen}>
-            <DialogTrigger asChild>
-                <Button>Checkout</Button>
-            </DialogTrigger>
-            <DialogContent>
-                <DialogHeader>
-                    <DialogTitle>Complete Your Payment</DialogTitle>
-                </DialogHeader>
-                {clientSecret ? (
-                    <Elements stripe={stripePromise} options={{clientSecret}}>
-                        <CheckoutForm clientSecret={clientSecret}/>
-                    </Elements>
-                ) : (
-                    <p>Loading payment details...</p>
-                )}
-                <DialogFooter>
-                    <Button variant="secondary" onClick={() => setIsOpen(false)}>
-                        Cancel
-                    </Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
-    );
-};
+        <div className="container mx-auto py-10 px-4">
+            <div className="mb-8">
+                <h1 className="text-3xl font-bold mb-2 text-primary-foreground">Checkout</h1>
+                <div className="flex items-center text-sm text-muted-foreground">
+                    <span>Cart</span>
+                    <ChevronRight className="h-4 w-4 mx-1"/>
+                    <span>Checkout</span>
+                </div>
+            </div>
+            <div className="grid gap-6 lg:grid-cols-2 px-2">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Checkout</CardTitle>
+                        <CardDescription>Complete your order by providing your shipping and payment
+                            details.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <div className={"space-y-4"}>
+                            <div className="flex justify-between items-center">
+                                <h3 className="text-lg font-semibold">Shipment Information</h3>
+                                <Button type={"button"} variant="outline" size="sm"
+                                        onClick={() => setIsEditing(!isEditing)}>
+                                    {isEditing ? (
+                                        "Cancel"
+                                    ) : (
+                                        <>
+                                            <Edit className="mr-2 h-4 w-4"/>
+                                            Edit
+                                        </>
+                                    )}
+                                </Button>
+                            </div>
+                            <ShippingDetails isEditing={isEditing} setIsEditing={setIsEditing}/>
+                        </div>
+                    </CardContent>
+                    {!isEditing && <CardFooter className="flex justify-between">
+                        <Button onClick={placeOrder} type="button" className="w-full" loading={isLoading}>
+                            Place Order
+                        </Button>
+                        <CheckoutDialog isOpen={isPaymentDialogOpen} setIsOpen={setIsPaymentDialogOpen}
+                                        clientSecret={clientSecret}/>
+                    </CardFooter>}
+                </Card>
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Order Summary</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="space-y-4">
+                            <div className="flex justify-between">
+                                <span>Subtotal</span>
+                                <span>${subtotal.toFixed(2)}</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span>Shipping</span>
+                                <span>${shippingFee.toFixed(2)}</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span>Tax</span>
+                                <span>${tax.toFixed(2)}</span>
+                            </div>
+                            <Separator/>
+                            <div className="flex justify-between font-bold">
+                                <span>Total</span>
+                                <span>${total.toFixed(2)}</span>
+                            </div>
+                        </div>
+                    </CardContent>
+                    <CardFooter>
+                        <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                            <CreditCard className="h-4 w-4"/>
+                            <span>Secure payment processed by Stripe</span>
+                        </div>
+                    </CardFooter>
+                </Card>
+            </div>
+        </div>
+    )
+}
 
-export default CheckoutDialog;

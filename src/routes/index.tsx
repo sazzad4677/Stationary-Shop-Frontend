@@ -16,6 +16,7 @@ import Dashboard from "@/pages/Dashboard";
 import UsersPage from "@/pages/Dashboard/Users.component.tsx";
 import ProductsPage from "@/pages/Dashboard/Products.component.tsx";
 import OrdersPage from "@/pages/Dashboard/Orders.components.tsx";
+import CheckoutPage from "@/pages/Checkout";
 
 const router = createBrowserRouter([
     {
@@ -53,6 +54,10 @@ const router = createBrowserRouter([
                     {
                         index: true,
                         element: <CartPage/>
+                    },
+                    {
+                        path: "checkout",
+                        element: <CheckoutPage/>
                     }
                 ]
             },

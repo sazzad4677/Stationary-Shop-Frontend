@@ -2,14 +2,6 @@ import {baseApi} from "@/redux/api/baseApi.ts";
 import {Tags} from "@/constants/global.ts";
 
 type TOrder = {
-    shippingAddress: {
-        address1: string;
-        address2: string;
-        city: string;
-        state: string;
-        zipCode: string;
-        country: string;
-    };
     products: {
         productId: string;
         quantity: number;
@@ -50,7 +42,17 @@ const orderApi = baseApi.injectEndpoints({
                 method: "PATCH",
             }),
             invalidatesTags: [Tags.Order]
-        }))
+        })),
+        getMyOrder: builder.query({
+            query: () => ({
+                url: `/orders/get-my-order`,
+                method: "GET",
+            }),
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            transformResponse: (response: { data: any }) => {
+                return response.data;
+            }
+        }),
     }),
 })
-export const {usePlaceOrderMutation, useGetOrdersQuery, useGetSingleOrderQuery, useUpdateOrderMutation} = orderApi;
+export const {usePlaceOrderMutation, useGetOrdersQuery, useGetSingleOrderQuery, useUpdateOrderMutation, useGetMyOrderQuery} = orderApi;

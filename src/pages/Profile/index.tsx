@@ -1,4 +1,4 @@
-import {useEffect, useRef, useState} from "react"
+import {useEffect, useRef} from "react"
 import {Button} from "@/components/ui/button"
 import {Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter} from "@/components/ui/card"
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs"
@@ -11,28 +11,16 @@ import {ProfileSchema} from "@/pages/Profile/Profile.schema.ts";
 import {useGetCountryQueryQuery} from "@/redux/services/countryInfo.api.ts";
 import {ScrollArea, ScrollBar} from "@/components/ui/scroll-area.tsx";
 import toast from "react-hot-toast";
-
-const initialOrders = [
-    {id: 1, status: "Delivered", date: "2023-05-15", total: "$120.00"},
-    {id: 2, status: "Shipped", date: "2023-05-20", total: "$85.50"},
-    {id: 3, status: "Processing", date: "2023-05-25", total: "$200.00"},
-    {id: 4, status: "Pending", date: "2023-05-30", total: "$150.75"},
-    {id: 5, status: "Pending", date: "2023-05-30", total: "$150.75"},
-    {id: 6, status: "Pending", date: "2023-05-30", total: "$150.75"},
-    {id: 7, status: "Pending", date: "2023-05-30", total: "$150.75"},
-    {id: 8, status: "Pending", date: "2023-05-30", total: "$150.75"},
-    {id: 9, status: "Pending", date: "2023-05-30", total: "$150.75"},
-    {id: 10, status: "Pending", date: "2023-05-30", total: "$150.75"},
-]
+import {useGetMyOrderQuery} from "@/redux/features/order/order.api.ts";
 
 type TProfileSchema = z.infer<typeof ProfileSchema>
 
 export default function ProfilePage() {
     const formRef = useRef<TGenericFormRef<TProfileSchema>>(null);
     const {data: userData} = useGetProfileQuery(undefined)
-    const [orders, setOrders] = useState(initialOrders)
     const {data: countryData} = useGetCountryQueryQuery(undefined)
     const [updateProfile] = useUpdateMyProfileMutation(undefined)
+    const {data} = useGetMyOrderQuery(undefined)
     const countryOptions = countryData?.map((item: { name: string }) => ({
         label: item.name,
         value: item.name,
@@ -49,7 +37,7 @@ export default function ProfilePage() {
             country: userData?.shippingAddress?.country || "",
         },
     };
-    const onSubmit = async (values:TProfileSchema) => {
+    const onSubmit = async (values: TProfileSchema) => {
         const {name, email, shippingAddress} = values
         const updatedData = {
             name,
@@ -81,8 +69,8 @@ export default function ProfilePage() {
         }
     }
 
-    const handleCancelOrder = (orderId: number) => {
-        setOrders(orders.map((order) => (order.id === orderId ? {...order, status: "Cancelled"} : order)))
+    const handleCancelOrder = () => {
+        // setOrders(orders.map((order) => (order.id === orderId ? {...order, status: "Cancelled"} : order)))
     }
 
     useEffect(() => {
@@ -92,7 +80,7 @@ export default function ProfilePage() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [userData, countryData]);
 
-    const orderStatus = ["All", "Processing", "Shipped", "Delivered", "Refunded"]
+    const orderStatus = ["All", "Paid", "Processing", "Shipped", "Delivered", "Refunded"]
 
     return (
         <div className="container mx-auto p-6 max-w-4xl">
@@ -230,22 +218,22 @@ export default function ProfilePage() {
                                     {orderStatus.map((tab) => (
                                         <TabsContent key={tab} value={tab} className="p-4">
                                             <div className="space-y-4">
-                                                {initialOrders
-                                                    .filter((order) => tab === orderStatus[0] || order.status === tab)
+                                                {data
+                                                    ?.filter((order) => tab === orderStatus[0] || order.status === tab)
                                                     .map((order) => (
                                                         <div key={order.id}
                                                              className="flex items-center justify-between p-4 border rounded-lg">
                                                             <div>
-                                                                <p className="font-medium">Order #{order.id}</p>
-                                                                <p className="text-sm text-gray-500">{order.date}</p>
-                                                                <p className="text-sm font-medium">{order.total}</p>
+                                                                <p className="font-medium">Order #{order.orderId}</p>
+                                                                <p className="text-sm text-gray-500">{order.createdAt}</p>
+                                                                <p className="text-sm font-medium">{order.totalPrice.toFixed(2)}</p>
                                                             </div>
                                                             <div className="text-right flex flex-col">
                                                                 <Badge
                                                                     variant={
                                                                         order.status === "Delivered"
                                                                             ? "default"
-                                                                            : order.status === "Shipped"
+                                                                            : (order.status === "Shipped" || order.status === "Paid")
                                                                                 ? "secondary"
                                                                                 : order.status === "Processing"
                                                                                     ? "outline"
@@ -258,6 +246,7 @@ export default function ProfilePage() {
                                                                     <Button
                                                                         variant="ghost"
                                                                         size="sm"
+                                                                        type={"button"}
                                                                         onClick={() => handleCancelOrder(order.id)}
                                                                         className="mt-2"
                                                                     >

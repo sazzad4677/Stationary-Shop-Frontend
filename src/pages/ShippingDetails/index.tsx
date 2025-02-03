@@ -1,17 +1,10 @@
-import {Button} from "@/components/ui/button.tsx"
-import {Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter} from "@/components/ui/card.tsx"
 import {shippingDetailsSchema, TShippingDetails} from "@/pages/ShippingDetails/shippingDetails.schema.ts";
-import {GenericForm} from "@/components/form/GenericForm.tsx";
-import {useAppDispatch, useAppSelector} from "@/redux/hooks.ts";
-import {usePlaceOrderMutation} from "@/redux/features/order/order.api.ts";
-import {selectUser} from "@/redux/features/auth/auth.slice.ts";
-import toast from "react-hot-toast";
-import {resetCart} from "@/redux/features/cart/cart.slice.ts";
-import {useNavigate} from "react-router";
+import {GenericForm, TGenericFormRef} from "@/components/form/GenericForm.tsx";
 import {useGetCountryQueryQuery} from "@/redux/services/countryInfo.api.ts";
-import {setOrderData} from "@/redux/features/order/order.slice.ts";
-import CheckoutDialog from "@/pages/Checkout";
-import {useState} from "react";
+import {useGetProfileQuery, useUpdateMyProfileMutation} from "@/redux/features/profile/profile.api.ts";
+import {Dispatch, SetStateAction, useEffect, useRef} from "react";
+import {handleToastPromise} from "@/utils/handleToastPromise.ts";
+import {Button} from "@/components/ui/button.tsx";
 
 const initialValues: TShippingDetails = {
     fullName: "",
@@ -24,14 +17,13 @@ const initialValues: TShippingDetails = {
     email: ""
 }
 
-const ShippingDetails = () => {
-    const dispatch = useAppDispatch();
-    const [isCheckoutDialogOpen, setIsCheckoutDialogOpen] = useState(false);
-    const navigate = useNavigate();
-    const [orderItem] = usePlaceOrderMutation(undefined)
-    const cartItems = useAppSelector((state) => state.cart.items);
-    const totalPrice = useAppSelector((state) => state.cart.totalPrice);
-    const user = useAppSelector(selectUser)
+const ShippingDetails = ({isEditing, setIsEditing}: {
+    isEditing: boolean,
+    setIsEditing: Dispatch<SetStateAction<boolean>>
+}) => {
+    const formRef = useRef<TGenericFormRef<TShippingDetails>>(null);
+    const [updateProfile, {isLoading}] = useUpdateMyProfileMutation(undefined)
+    const {data: myData} = useGetProfileQuery(undefined)
     const {data: countryData} = useGetCountryQueryQuery(undefined)
     const countryOptions = countryData?.map((item: { name: string }) => ({
         label: item.name,
@@ -39,7 +31,7 @@ const ShippingDetails = () => {
     }))
     const onSubmit = async (values: TShippingDetails) => {
         const {addressLine1, addressLine2, city, state, zipCode, country} = values
-        const orderData = {
+        const data = {
             shippingAddress: {
                 address1: addressLine1,
                 address2: addressLine2,
@@ -48,137 +40,171 @@ const ShippingDetails = () => {
                 zipCode,
                 country,
             },
-            products: cartItems.map((item) => {
-                return {
-                    productId: item._id,
-                    quantity: item.quantity,
-                }
-            }),
-            totalPrice,
         }
-        dispatch(setOrderData(orderData));
-        setIsCheckoutDialogOpen(true)
-        // try {
-        //     await toast.promise(
-        //         (async () => {
-        //             await orderItem(orderData).unwrap();
-        //             dispatch(resetCart());
-        //             navigate("/order-placed");
-        //         })(),
-        //         {
-        //             loading: 'Loading...',
-        //             success: 'Order Placed Successfully!',
-        //             error: (err: { data: { message: string; }; }) => err?.data?.message,
-        //         },
-        //         {id: 'order-placed'}
-        //     );
-        // } catch (error) {
-        //     console.error('An error occurred:', error);
-        //     toast.error('Something went wrong! Please try again.', {id: 'order-placed'});
-        // }
+        await handleToastPromise(
+            async () => {
+                await updateProfile(data).unwrap();
+                setIsEditing(false)
+            },
+            {
+                loading: "Loading...",
+                success: "Successfully updated",
+                error: (err: { data: { message: string } }) =>
+                    err?.data?.message || "An error occurred during update. Please try again later.",
+            },
+            "update-profile"
+        );
     }
 
+    useEffect(() => {
+        if (myData && formRef.current) {
+            formRef.current.reset({
+                email: myData.email || "",
+                fullName: myData.name || "",
+                addressLine1: myData.shippingAddress.address1 || "",
+                addressLine2: myData.shippingAddress.address2 || "",
+                city: myData.shippingAddress.city || "",
+                state: myData.shippingAddress.state || "",
+                zipCode: myData.shippingAddress.zipCode || "",
+                country: myData.shippingAddress.country || "",
+            });
+        }
+    }, [myData]);
+
+
     return (
-            <GenericForm initialValues={{
-                ...initialValues,
-                email: user?.email || "",
-                fullName: user?.name || "",
-            }} onSubmit={onSubmit} schema={shippingDetailsSchema}>
-                <div className="container mx-auto px-4 py-8">
-                    <Card className="w-full max-w-2xl mx-auto">
-                        <CardHeader>
-                            <CardTitle className="text-2xl font-bold">Shipping Details</CardTitle>
-                            <CardDescription>Please confirm your shipping information</CardDescription>
-                        </CardHeader>
-                        <CardContent>
+        <GenericForm ref={formRef} initialValues={{
+            ...initialValues,
+            email: myData?.email || "",
+            fullName: myData?.name || "",
+            addressLine1: myData?.shippingAddress.address1 || "",
+            addressLine2: myData?.shippingAddress.address2 || "",
+            city: myData?.shippingAddress.city || "",
+            state: myData?.shippingAddress.state || "",
+            zipCode: myData?.shippingAddress.zipCode || "",
+            country: myData?.shippingAddress.country || "",
+        }} onSubmit={onSubmit} schema={shippingDetailsSchema}>
+            {isEditing ? <>
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <div className={"col-span-1 sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4"}>
+                            <GenericForm.Text
+                                <TShippingDetails>
+                                name="fullName"
+                                required
+                                label={"Full Name"}
+                                placeholder={"Enter your full name"}
+                                disabled={true}
+                            />
+                            <GenericForm.Text
+                                <TShippingDetails>
+                                name="email"
+                                required
+                                label={"Email"}
+                                placeholder={"Enter your Email"}
+                                disabled={true}
+                            />
+                        </div>
+                        <div className={"col-span-1 sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4"}>
+                            <GenericForm.TextArea
+                                <TShippingDetails>
+                                name="addressLine1"
+                                required
+                                label={"Address Line 1"}
+                                placeholder={"123 Main St"}
+                                resizeable
+                            />
+                            <GenericForm.TextArea
+                                <TShippingDetails>
+                                name="addressLine2"
+                                label={"Address Line 2"}
+                                placeholder={"Apartment 123"}
+                                resizeable
+                            />
+                        </div>
+                        <GenericForm.Select
+                            <TShippingDetails>
+                            name="country"
+                            required
+                            placeholder={"Country"}
+                            label={"Country"}
+                            options={countryOptions || []}
+                        />
+                        <GenericForm.Select
+                            <TShippingDetails>
+                            name="city"
+                            required
+                            placeholder={"City"}
+                            label={"City"}
+                            options={[{
+                                label: "New York",
+                                value: "New York"
+                            }, {
+                                label: "Los Angeles",
+                                value: "Los Angeles"
+                            }, {
+                                label: "Chicago",
+                                value: "Chicago"
+                            }
+                            ]}
+                        />
+                        <GenericForm.Text
+                            <TShippingDetails>
+                            name="state"
+                            placeholder={"State"}
+                            label={"State"}
+                            required
+                        />
+                        <GenericForm.Text
+                            <TShippingDetails>
+                            name="zipCode"
+                            placeholder={"Zip Code"}
+                            label={"Zip Code"}
+                            required
+                        />
 
-                            <div className={"space-y-6"}>
-                                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                                    <div className={"col-span-1 sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4"}>
-                                        <GenericForm.Text
-                                            <TShippingDetails>
-                                            name="fullName"
-                                            required
-                                            label={"Full Name"}
-                                            placeholder={"Enter your full name"}
-                                        />
-                                        <GenericForm.Text
-                                            <TShippingDetails>
-                                            name="email"
-                                            required
-                                            label={"Email"}
-                                            placeholder={"Enter your Email"}
-                                        />
-                                    </div>
-                                    <div className={"col-span-1 sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4"}>
-                                        <GenericForm.TextArea
-                                            <TShippingDetails>
-                                            name="addressLine1"
-                                            required
-                                            label={"Address Line 1"}
-                                            placeholder={"123 Main St"}
-                                            resizeable
-                                        />
-                                        <GenericForm.TextArea
-                                            <TShippingDetails>
-                                            name="addressLine2"
-                                            label={"Address Line 2"}
-                                            placeholder={"Apartment 123"}
-                                            resizeable
-                                        />
-                                    </div>
-                                    <GenericForm.Select
-                                        <TShippingDetails>
-                                        name="country"
-                                        required
-                                        placeholder={"Country"}
-                                        label={"Country"}
-                                        options={countryOptions || []}
-                                    />
-                                    <GenericForm.Select
-                                        <TShippingDetails>
-                                        name="city"
-                                        required
-                                        placeholder={"City"}
-                                        label={"City"}
-                                        options={[{
-                                            label: "New York",
-                                            value: "New York"
-                                        }, {
-                                            label: "Los Angeles",
-                                            value: "Los Angeles"
-                                        }, {
-                                            label: "Chicago",
-                                            value: "Chicago"
-                                        }
-                                        ]}
-                                    />
-                                    <GenericForm.Text
-                                        <TShippingDetails>
-                                        name="state"
-                                        placeholder={"State"}
-                                        label={"State"}
-                                        required
-                                    />
-                                    <GenericForm.Text
-                                        <TShippingDetails>
-                                        name="zipCode"
-                                        placeholder={"Zip Code"}
-                                        label={"Zip Code"}
-                                        required
-                                    />
-
-                                </div>
-                            </div>
-
-                        </CardContent>
-                        <CardFooter>
-                            <Button>Confirm and Continue</Button>
-                        </CardFooter>
-                    </Card>
-                </div>
-                <CheckoutDialog isOpen={isCheckoutDialogOpen} setIsOpen={setIsCheckoutDialogOpen} />
-            </GenericForm>
+                    </div>
+                </>
+                :
+                <div className="space-y-4 p-4 rounded-lg ">
+                    <div className="flex items-center space-x-2">
+                        <strong className="text-gray-600 w-24">Name:</strong>
+                        <span className="text-gray-800">{myData?.name || "N/A"}</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                        <strong className="text-gray-600 w-24">Email:</strong>
+                        <span className="text-gray-800">{myData?.email || "N/A"}</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                        <strong className="text-gray-600 w-24">Address 1:</strong>
+                        <span className="text-gray-800">{myData?.shippingAddress?.address1 || "N/A"}</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                        <strong className="text-gray-600 w-24">Address 2:</strong>
+                        <span className="text-gray-800">{myData?.shippingAddress?.address2 || "N/A"}</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                        <strong className="text-gray-600 w-24">City:</strong>
+                        <span className="text-gray-800">{myData?.shippingAddress?.city || "N/A"}</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                        <strong className="text-gray-600 w-24">Country:</strong>
+                        <span className="text-gray-800">{myData?.shippingAddress?.country || "N/A"}</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                        <strong className="text-gray-600 w-24">State:</strong>
+                        <span className="text-gray-800">{myData?.shippingAddress?.state || "N/A"}</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                        <strong className="text-gray-600 w-24">Zip Code:</strong>
+                        <span className="text-gray-800">{myData?.shippingAddress?.zipCode || "N/A"}</span>
+                    </div>
+                </div>}
+            {isEditing && <div className={"mt-6"}>
+                <Button type="submit" className="w-full" loading={isLoading}>
+                    {"Save Changes"}
+                </Button>
+            </div>}
+        </GenericForm>
     )
 }
 
