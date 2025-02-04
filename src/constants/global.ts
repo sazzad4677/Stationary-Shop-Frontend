@@ -22,6 +22,7 @@ export const Tags = {
     Product: "Product",
     USER: "USER",
     Order: "Order",
+    MyOrders: "MyOrders",
 } as const;
 
 export const limitPerPage = [5, 10, 20, 50]

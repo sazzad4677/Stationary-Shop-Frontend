@@ -1,4 +1,4 @@
-import {useEffect, useRef} from "react"
+import {useEffect, useRef, useState} from "react"
 import {Button} from "@/components/ui/button"
 import {Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter} from "@/components/ui/card"
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs"
@@ -11,7 +11,13 @@ import {ProfileSchema} from "@/pages/Profile/Profile.schema.ts";
 import {useGetCountryQueryQuery} from "@/redux/services/countryInfo.api.ts";
 import {ScrollArea, ScrollBar} from "@/components/ui/scroll-area.tsx";
 import toast from "react-hot-toast";
-import {useGetMyOrderQuery} from "@/redux/features/order/order.api.ts";
+import {useCancelOrderMutation, useGetMyOrderQuery, useOrderPayNowMutation,} from "@/redux/features/order/order.api.ts";
+import {handleToastPromise} from "@/utils/handleToastPromise.ts";
+import CheckoutDialog from "@/pages/Checkout/CheckoutDialog.tsx";
+import ConfirmationModal from "@/components/features/ConfirmationModal.tsx";
+import {TOrder} from "@/types/order.types.ts";
+import {ChevronRight} from "lucide-react";
+import OrderDetails from "@/pages/Profile/OrderDetails.component.tsx";
 
 type TProfileSchema = z.infer<typeof ProfileSchema>
 
@@ -20,7 +26,13 @@ export default function ProfilePage() {
     const {data: userData} = useGetProfileQuery(undefined)
     const {data: countryData} = useGetCountryQueryQuery(undefined)
     const [updateProfile] = useUpdateMyProfileMutation(undefined)
+    const [cancelOrder, {isLoading: isCancelLoading}] = useCancelOrderMutation(undefined)
     const {data} = useGetMyOrderQuery(undefined)
+    const [clientSecret, setClientSecret] = useState<string>("")
+    const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false)
+    const [selectedOrder, setSelectedOrder] = useState<TOrder | null>(null)
+    const [isOrderDetailsOpen, setIsOrderDetailsOpen] = useState(false)
+    const [payNow] = useOrderPayNowMutation(undefined)
     const countryOptions = countryData?.map((item: { name: string }) => ({
         label: item.name,
         value: item.name,
@@ -69,8 +81,20 @@ export default function ProfilePage() {
         }
     }
 
-    const handleCancelOrder = () => {
-        // setOrders(orders.map((order) => (order.id === orderId ? {...order, status: "Cancelled"} : order)))
+    const handleCancelOrder = async (orderId: string) => {
+        await handleToastPromise(
+            async () => {
+                await cancelOrder(orderId).unwrap();
+                // dispatch(resetCart());
+            },
+            {
+                loading: "Cancelling Order...",
+                success: "Successfully Cancelled the Order!",
+                error: (err: { data: { message: string } }) =>
+                    err?.data?.message || "An error occurred during update. Please try again later.",
+            },
+            "cancel-order"
+        );
     }
 
     useEffect(() => {
@@ -80,11 +104,25 @@ export default function ProfilePage() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [userData, countryData]);
 
-    const orderStatus = ["All", "Paid", "Processing", "Shipped", "Delivered", "Refunded"]
+    const orderStatus = ["All", "Pending", "Paid", "Processing", "Shipped", "Delivered", "Refunded"]
+
+    const handlePayNow = async (orderId: string) => {
+        const {data} = await payNow(orderId).unwrap();
+        if (!data?.clientSecret) return toast.error("An error occurred during placing the order. Please try again later.");
+        setClientSecret(data?.clientSecret)
+        setIsPaymentDialogOpen(true)
+    }
 
     return (
-        <div className="container mx-auto p-6 max-w-4xl">
-            <h1 className="text-3xl font-bold mb-6 text-gray-800">My Profile</h1>
+        <div className="container mx-auto p-6 max-w-6xl">
+            <div className="mb-8">
+                <h1 className="text-3xl font-bold mb-2 text-primary-foreground">My Profile</h1>
+                <div className="flex items-center text-sm text-muted-foreground">
+                    <span>Home</span>
+                    <ChevronRight className="h-4 w-4 mx-1"/>
+                    <span>Profile</span>
+                </div>
+            </div>
             <GenericForm ref={formRef} schema={ProfileSchema} initialValues={initialValues} onSubmit={onSubmit}>
                 <div className="grid gap-6 md:grid-cols-[1fr_2fr]">
                     <Card className="md:row-span-2">
@@ -108,14 +146,16 @@ export default function ProfilePage() {
                                                                   placeholder={"Enter your name here"}/>
                             </div>
                             <div className="space-y-2">
-                                <GenericForm.Text<TProfileSchema> label="Email Address" name="email" type="email"
-                                                                  placeholder={"Enter your email address"}/>
+                                <GenericForm.Text<TProfileSchema>
+                                    label="Email Address"
+                                    name="email"
+                                    type="email"
+                                    placeholder={"Enter your email address"}
+                                />
                             </div>
                         </CardContent>
                         <CardFooter>
-                            <Button className="w-full">
-                                Save Changes
-                            </Button>
+                            <Button className="w-full">Save Changes</Button>
                         </CardFooter>
                     </Card>
 
@@ -125,39 +165,44 @@ export default function ProfilePage() {
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div className="space-y-2">
-                                <GenericForm.Text<TProfileSchema> name={"shippingAddress.addressLine1"}
-                                                                  label={"Address Line 1"}
-                                                                  placeholder={"Address Line 1"}/>
+                                <GenericForm.Text<TProfileSchema>
+                                    name={"shippingAddress.addressLine1"}
+                                    label={"Address Line 1"}
+                                    placeholder={"Address Line 1"}
+                                />
                             </div>
                             <div className="space-y-2">
-                                <GenericForm.Text<TProfileSchema> name={"shippingAddress.addressLine2"}
-                                                                  label={"Address Line 2"}
-                                                                  placeholder={"Address Line 2"}/>
+                                <GenericForm.Text<TProfileSchema>
+                                    name={"shippingAddress.addressLine2"}
+                                    label={"Address Line 2"}
+                                    placeholder={"Address Line 2"}
+                                />
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <GenericForm.Select
-                                        <TProfileSchema>
+                                    <GenericForm.Select<TProfileSchema>
                                         name="shippingAddress.city"
                                         required
                                         placeholder={"City"}
                                         label={"City"}
-                                        options={[{
-                                            label: "New York",
-                                            value: "New York"
-                                        }, {
-                                            label: "Los Angeles",
-                                            value: "Los Angeles"
-                                        }, {
-                                            label: "Chicago",
-                                            value: "Chicago"
-                                        }
+                                        options={[
+                                            {
+                                                label: "New York",
+                                                value: "New York",
+                                            },
+                                            {
+                                                label: "Los Angeles",
+                                                value: "Los Angeles",
+                                            },
+                                            {
+                                                label: "Chicago",
+                                                value: "Chicago",
+                                            },
                                         ]}
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <GenericForm.Text
-                                        <TProfileSchema>
+                                    <GenericForm.Text<TProfileSchema>
                                         name="shippingAddress.state"
                                         placeholder={"State"}
                                         label={"State"}
@@ -167,8 +212,7 @@ export default function ProfilePage() {
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <GenericForm.Text
-                                        <TProfileSchema>
+                                    <GenericForm.Text<TProfileSchema>
                                         name="shippingAddress.zipCode"
                                         placeholder={"Zip Code"}
                                         label={"Enter Zip Code"}
@@ -176,8 +220,7 @@ export default function ProfilePage() {
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <GenericForm.Select
-                                        <TProfileSchema>
+                                    <GenericForm.Select<TProfileSchema>
                                         name="shippingAddress.country"
                                         required
                                         placeholder={"Country"}
@@ -205,8 +248,11 @@ export default function ProfilePage() {
                                     <ScrollArea>
                                         <TabsList className="w-full">
                                             {orderStatus.map((status) => (
-                                                <TabsTrigger key={status} value={status}
-                                                             className="rounded-sm px-4 py-1.5 w-full text-sm font-medium">
+                                                <TabsTrigger
+                                                    key={status}
+                                                    value={status}
+                                                    className="rounded-sm px-4 py-1.5 w-full text-sm font-medium"
+                                                >
                                                     {status.charAt(0).toUpperCase() + status.slice(1)}
                                                 </TabsTrigger>
                                             ))}
@@ -216,42 +262,65 @@ export default function ProfilePage() {
                                 </div>
                                 <ScrollArea className="h-[400px] mt-4 rounded-md border">
                                     {orderStatus.map((tab) => (
-                                        <TabsContent key={tab} value={tab} className="p-4">
+                                        <TabsContent key={tab} value={tab} className="p-4 ">
                                             <div className="space-y-4">
                                                 {data
-                                                    ?.filter((order) => tab === orderStatus[0] || order.status === tab)
-                                                    .map((order) => (
-                                                        <div key={order.id}
-                                                             className="flex items-center justify-between p-4 border rounded-lg">
-                                                            <div>
+                                                    ?.filter((order: TOrder) => tab === orderStatus[0] || order.status === tab)
+                                                    .map((order: TOrder) => (
+                                                        <div
+                                                            key={order._id}
+                                                            className="flex items-center justify-between p-4 border rounded-lg cursor-pointer hover:bg-gray-100"
+                                                        >
+                                                            <div  onClick={() => {
+                                                                setSelectedOrder(order)
+                                                                setIsOrderDetailsOpen(true)
+                                                            }}>
                                                                 <p className="font-medium">Order #{order.orderId}</p>
-                                                                <p className="text-sm text-gray-500">{order.createdAt}</p>
-                                                                <p className="text-sm font-medium">{order.totalPrice.toFixed(2)}</p>
+                                                                <p className="text-sm text-gray-500">{new Date(order.createdAt).toLocaleString()}</p>
+                                                                <p className="text-sm font-medium">${order.totalPrice.toFixed(2)}</p>
                                                             </div>
-                                                            <div className="text-right flex flex-col">
-                                                                <Badge
-                                                                    variant={
-                                                                        order.status === "Delivered"
-                                                                            ? "default"
-                                                                            : (order.status === "Shipped" || order.status === "Paid")
-                                                                                ? "secondary"
-                                                                                : order.status === "Processing"
-                                                                                    ? "outline"
-                                                                                    : "destructive"
-                                                                    }
-                                                                >
-                                                                    {order.status}
-                                                                </Badge>
-                                                                {(order.status === "Pending") && (
-                                                                    <Button
-                                                                        variant="ghost"
-                                                                        size="sm"
-                                                                        type={"button"}
-                                                                        onClick={() => handleCancelOrder(order.id)}
-                                                                        className="mt-2"
+                                                            <div className="text-right flex flex-col items-end gap-2">
+                                                                <div>
+                                                                    <Badge
+                                                                        variant={
+                                                                            order.status === "Delivered"
+                                                                                ? "default"
+                                                                                : order.status === "Shipped" || order.status === "Paid"
+                                                                                    ? "secondary"
+                                                                                    : order.status === "Processing"
+                                                                                        ? "outline"
+                                                                                        : "destructive"
+                                                                        }
+                                                                        className={""}
                                                                     >
-                                                                        Cancel
-                                                                    </Button>
+                                                                        {order.status}
+                                                                    </Badge>
+                                                                </div>
+                                                                {order.status === "Pending" && (
+                                                                    <div className=" flex items-center gap-x-2">
+                                                                        <div>
+                                                                            <ConfirmationModal
+                                                                                handleConfirm={() => handleCancelOrder(order._id)}
+                                                                                itemName={order.orderId}
+                                                                                type={"cancel"}
+                                                                                variant={"outline"}
+                                                                                loading={isCancelLoading}
+                                                                            />
+                                                                        </div>
+                                                                        <div>
+                                                                            <Button
+                                                                                variant="default"
+                                                                                size="sm"
+                                                                                type="button"
+                                                                                onClick={async (e) => {
+                                                                                    e.stopPropagation()
+                                                                                    await handlePayNow(order._id)
+                                                                                }}
+                                                                            >
+                                                                                Pay Now
+                                                                            </Button>
+                                                                        </div>
+                                                                    </div>
                                                                 )}
                                                             </div>
                                                         </div>
@@ -259,12 +328,19 @@ export default function ProfilePage() {
                                             </div>
                                         </TabsContent>
                                     ))}
+                                    <ScrollBar orientation="horizontal"/>
                                 </ScrollArea>
                             </Tabs>
                         </CardContent>
                     </Card>
                 </div>
             </GenericForm>
+            <CheckoutDialog isOpen={isPaymentDialogOpen} setIsOpen={setIsPaymentDialogOpen}
+                            clientSecret={clientSecret}/>
+            {selectedOrder && (
+                <OrderDetails order={selectedOrder} isOpen={isOrderDetailsOpen}
+                              onClose={() => setIsOrderDetailsOpen(false)}/>
+            )}
         </div>
     )
 }

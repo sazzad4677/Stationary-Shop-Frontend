@@ -42,6 +42,7 @@ export function OrderDetailsDialog({ viewDetails, setViewDetailsClose }: OrderDe
         Shipped: "bg-purple-500 text-white",
         Delivered: "bg-green-700 text-white",
         Refunded: "bg-red-500 text-white",
+        Canceled: "bg-destructive text-white",
     }
 
     return (

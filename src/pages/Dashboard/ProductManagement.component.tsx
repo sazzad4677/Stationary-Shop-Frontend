@@ -19,6 +19,7 @@ import {productCategories} from "@/constants/global.ts";
 import {useEffect, useRef} from "react";
 import {useGenerateDescriptionMutation} from "@/redux/services/openAiApi.ts";
 import {useCreateProductMutation, useUpdateProductMutation} from "@/redux/features/admin/products/products.api.ts";
+import MultiImageField from "@/components/form/MultipleImageField.tsx";
 
 type TProductManageProps = {
     isDialogOpen: boolean;
@@ -37,6 +38,7 @@ const initialValues: TProduct = {
     description: "",
     quantity: 0,
     inStock: true,
+    images: [],
 }
 
 const ProductManagement = ({
@@ -55,15 +57,24 @@ const ProductManagement = ({
         value: item,
     }))
     const handleAddProduct = async (newProduct: TProduct) => {
+        const formValues = {...newProduct};
+        const formData = new FormData();
+        formValues?.images?.forEach((image) => {
+            if (image.file) {
+                formData.append("images", image.file);
+            }
+        });
+        formValues.images = []
+        formData.append("data", JSON.stringify(formValues));
         try {
             await toast.promise(
                 (async () => {
-                    await addProduct(newProduct).unwrap();
+                    await addProduct(formData).unwrap();
                     setIsDialogOpen(false)
                 })(),
                 {
                     loading: 'Loading...',
-                    success: 'Successfully logged in',
+                    success: 'Successfully Product Created',
                     error: (err: { data: { message: string; }; }) => err?.data?.message,
                 },
                 {
@@ -103,8 +114,6 @@ const ProductManagement = ({
             console.error('An error occurred:', error);
             toast.error('Something went wrong! Please try again.', {id: 'updateProduct',});
         }
-        // Implement update product logic
-
     }
 
     const onSubmit = async (values: TProduct) => {
@@ -131,6 +140,10 @@ const ProductManagement = ({
                 description,
                 quantity,
                 inStock,
+                // images: images.map((image: string) => ({
+                //     preview: image,
+                //     file: undefined
+                // })),
             }
             formRef.current.reset(newInitialValues);
         }
@@ -158,15 +171,21 @@ const ProductManagement = ({
                     <Plus className="mr-2 h-4 w-4"/> Add Product
                 </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="w-[70vw] max-w-4xl  max-h-[80vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle>{editingProduct ? "Edit Product" : "Add New Product"}</DialogTitle>
                 </DialogHeader>
                 <DialogDescription/>
                 <GenericForm ref={formRef} onSubmit={onSubmit} initialValues={initialValues} schema={productSchema}>
                     <div className="space-y-2 mb-2">
-                        <GenericForm.Text<TProduct> label="Name" name="name" placeholder="Product Name" required/>
-                        <GenericForm.Text<TProduct> label="Brand" name="brand" placeholder="Product Brand" required/>
+                        <div className={"grid grid-cols-1 md:grid-cols-2 gap-x-2"}>
+                            <GenericForm.Text<TProduct> label="Name"
+                                                        name="name"
+                                                        placeholder="Product Name"
+                                                        required/>
+                            <GenericForm.Text<TProduct> label="Brand" name="brand" placeholder="Product Brand"
+                                                        required/>
+                        </div>
                         <GenericForm.Select<TProduct> name="category" label="Category" options={categoryOptions}
                                                       required/>
                         <div className={"grid grid-cols-1 md:grid-cols-2 gap-4"}>
@@ -185,6 +204,12 @@ const ProductManagement = ({
                             aiAction={aiAction}
                             loading={isLoading}
                         />
+                        {!editingProduct && <MultiImageField<TProduct>
+                            name="images"
+                            label="Product Images"
+                            required
+                        />}
+
                     </div>
                     <Button type="submit"
                             loading={isAddProductLoading || isUpdateProductLoading}>{editingProduct ? "Update Product" : "Add Product"}</Button>

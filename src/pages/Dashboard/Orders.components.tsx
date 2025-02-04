@@ -1,8 +1,9 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import {useEffect, useRef, useState} from "react"
 import {Card, CardContent, CardHeader} from "@/components/ui/card"
 import {Layout} from "@/components/layout/DashboardLayout"
 import Table from "@/components/features/Table"
-import {useGetOrdersQuery, useUpdateOrderMutation} from "@/redux/features/order/order.api"
+import {useGetOrdersQuery, useInitiateRefundMutation, useUpdateOrderMutation} from "@/redux/features/order/order.api"
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select"
 import {TOrder} from "@/types/order.types"
 import {handleToastPromise} from "@/utils/handleToastPromise"
@@ -15,17 +16,20 @@ import {
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
 import {Button} from "@/components/ui/button"
-import {MoreHorizontal, FileText, Printer, DownloadCloudIcon} from 'lucide-react'
+import {MoreHorizontal, FileText, Printer, DownloadCloudIcon, X,  TicketX} from 'lucide-react'
 import {Badge} from "@/components/ui/badge"
 import {OrderDetailsDialog} from "@/pages/Dashboard/OrderDetails.component.tsx";
 import {useReactToPrint} from "react-to-print";
 import InvoicePDF from "@/pages/Dashboard/OrderPrintPDF.component.tsx";
 import exportToExcel from "@/utils/exportToExcel.ts";
+import ConfirmationModal from "@/components/features/ConfirmationModal.tsx";
 
 export default function OrdersPage() {
     const [viewProduct, setViewProduct] = useState<boolean | string>(false)
     const invoiceRef = useRef(null)
     const [singleOrderData, setSingleOrderData] = useState<TOrder | null>();
+    const [isCanceling, setIsCanceling] = useState<boolean | string>(false);
+    const [isRefunding, setIsRefunding] = useState<boolean | string>(false);
     const [isPrinting, setIsPrinting] = useState<boolean>(false);
     const [query, setQuery] = useState<Record<string, unknown>>({
         page: 1,
@@ -35,6 +39,7 @@ export default function OrdersPage() {
     })
     const {data: orderData, isFetching} = useGetOrdersQuery(query)
     const [updateStatus, {isLoading}] = useUpdateOrderMutation(undefined)
+    const [initiateRefund, {isLoading: isRefundLoading}] = useInitiateRefundMutation(undefined)
     const handlePrint = useReactToPrint({
         contentRef: invoiceRef,
         onAfterPrint: () => {
@@ -49,6 +54,7 @@ export default function OrdersPage() {
         Shipped: "bg-purple-500 text-white",
         Delivered: "bg-green-700 text-white",
         Refunded: "bg-red-500 text-white",
+        Canceled: "bg-destructive text-white",
     };
 
     const columns = [
@@ -65,21 +71,23 @@ export default function OrdersPage() {
             key: "status",
             render: (status: string, value: TOrder) => {
                 return (
-                    <Select value={status} onValueChange={async (status) => {
-                        await handleUpdateStatus(value._id, status)
-                    }}>
-                        <SelectTrigger className={`w-[130px] ${statusColors[status]}`}>
-                            <SelectValue placeholder="Update Status"/>
-                        </SelectTrigger>
-                        <SelectContent>
-                            {
-                                ["Pending", "Paid", "Processing", "Shipped", "Delivered", "Refunded"].map(status => (
-                                    <SelectItem key={status} disabled={(status === value.status) || (status === "Paid")}
-                                                value={status}>{status}</SelectItem>
-                                ))
-                            }
-                        </SelectContent>
-                    </Select>
+                    ((status !== "Refunded" && status !== "Canceled")) ?
+                        <Select value={status} onValueChange={async (status) => {
+                            await handleUpdateStatus(value._id, status)
+                        }}>
+                            <SelectTrigger className={`w-[130px] ${statusColors[status]}`}>
+                                <SelectValue placeholder="Update Status"/>
+                            </SelectTrigger>
+                            <SelectContent>
+                                {
+                                    ["Pending", "Paid", "Processing", "Shipped", "Delivered",].map(status => (
+                                        <SelectItem key={status}
+                                                    disabled={(status === value.status) || (status === "Paid")}
+                                                    value={status}>{status}</SelectItem>
+                                    ))
+                                }
+                            </SelectContent>
+                        </Select> : <Badge variant="destructive" className={statusColors[status]}>{status}</Badge>
                 );
             },
         },
@@ -107,20 +115,52 @@ export default function OrdersPage() {
     }
 
     const handleExport = () => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const exportData: Partial<TOrder>[] = orderData?.data?.map(({
-                                                                  _id,
-                                                                  createdAt,
-                                                                  updatedAt,
-                                                                  ...rest
-                                                              }: TOrder) => rest) || [];
+                                                                        _id,
+                                                                        createdAt,
+                                                                        updatedAt,
+                                                                        ...rest
+                                                                    }: TOrder) => rest) || [];
         exportToExcel<Partial<TOrder>>(exportData, 'Orders');
     };
+
+    const handleCancelOrder = async () => {
+        if (typeof isCanceling === "string") {
+            await handleToastPromise(
+                async () => {
+                    await updateStatus({id: isCanceling, status: "Canceled"}).unwrap();
+                },
+                {
+                    loading: "Cancelling order...",
+                    success: "Successfully cancelled order",
+                    error: (err: { data: { message: string } }) =>
+                        err?.data?.message || "An error occurred during cancel order.",
+                }
+            )
+        }
+    }
+
+    const handleRefundOrder = async () => {
+        if (typeof isRefunding === "string") {
+            await handleToastPromise(
+                async () => {
+                    await initiateRefund(isRefunding).unwrap();
+                },
+                {
+                    loading: "Refunding order...",
+                    success: "Successfully refunded order",
+                    error: (err: { data: { message: string } }) =>
+                        err?.data?.message || "An error occurred during cancel order.",
+                }
+            )
+        }
+    }
 
     useEffect(() => {
         if (singleOrderData && isPrinting) {
             handlePrint();
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [singleOrderData, isPrinting]);
 
 
@@ -179,13 +219,24 @@ export default function OrdersPage() {
                                         <FileText className="mr-2 h-4 w-4"/>
                                         View Order Details
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={ () => {
+                                    <DropdownMenuItem onClick={() => {
                                         setSingleOrderData(item)
                                         setIsPrinting(true)
                                     }}>
                                         <Printer className="mr-2 h-4 w-4"/>
                                         Print Order
                                     </DropdownMenuItem>
+                                    <DropdownMenuSeparator/>
+                                    {item.status === "Canceled" && item.isPaid &&
+                                        <DropdownMenuItem onClick={() => setIsRefunding(item._id)} disabled={isRefundLoading}>
+                                            <TicketX className="mr-2 h-4 w-4"/>
+                                            Refund Order
+                                        </DropdownMenuItem>}
+                                    {item.status !== "Canceled" && item.status !== "Refunded" &&
+                                        <DropdownMenuItem onClick={() => setIsCanceling(item._id)} disabled={isLoading}>
+                                            <X className="mr-2 h-4 w-4"/>
+                                            Cancel Order
+                                        </DropdownMenuItem>}
                                 </DropdownMenuContent>
                             </DropdownMenu>
                         )}
@@ -195,6 +246,33 @@ export default function OrdersPage() {
             </Card>
             <OrderDetailsDialog viewDetails={viewProduct} setViewDetailsClose={setViewProduct}/>
             {<div className="hidden">{singleOrderData && <InvoicePDF order={singleOrderData} ref={invoiceRef}/>}</div>}
+            {/*  Order Cancel Confirmation  */}
+            <ConfirmationModal
+                handleConfirm={() => handleCancelOrder()}
+                customType={{
+                    message: `Are you sure you want to cancel this order?`,
+                    actionLabel: "Proceed",
+                    cancelLabel: "Go Back"
+                }}
+                customTrigger={{
+                    open: Boolean(isCanceling),
+                    setOpen: (state: boolean) => setIsCanceling(state)
+                }}
+            />
+            {/*  Refund Confirmation  */}
+            <ConfirmationModal
+                handleConfirm={() => handleRefundOrder()}
+                customType={{
+                    message: `Are you sure you want to refund this order?`,
+                    actionLabel: "Proceed",
+                    cancelLabel: "Go Back"
+                }}
+                customTrigger={{
+                    open: Boolean(isRefunding),
+                    setOpen: (state: boolean) => setIsRefunding(state)
+                }}
+            />
+
         </Layout>
     )
 }

@@ -1,4 +1,4 @@
-import { z } from "zod"
+import { z } from "zod";
 
 export const productSchema = z.object({
     name: z.string().min(1, { message: "Product Name is required" }),
@@ -8,4 +8,16 @@ export const productSchema = z.object({
     description: z.string().min(1, { message: "Description is required" }),
     quantity: z.coerce.number(),
     inStock: z.boolean().default(true),
-})
+    images: z.array(
+        z.object({
+            file: z
+                .unknown()
+                .optional()
+                .refine((val) => val instanceof File || val === undefined, {
+                    message: "File must be an image or undefined",
+                }),
+            preview: z.string().url("Preview must be a valid URL"),
+        })
+    ).optional(),
+
+});

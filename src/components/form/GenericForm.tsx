@@ -86,3 +86,4 @@ GenericForm.SliderField = SliderField
 GenericForm.SearchField = SearchField
 GenericForm.Checkbox = CheckBoxField
 GenericForm.Switch = SwitchField
+GenericForm.Image = ImageField

@@ -20,7 +20,6 @@ export interface TProduct {
     description: string
     quantity: number
     inStock: boolean
-
     updatedAt: string
     createdAt: string
     __v: number

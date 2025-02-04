@@ -51,8 +51,30 @@ const orderApi = baseApi.injectEndpoints({
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             transformResponse: (response: { data: any }) => {
                 return response.data;
-            }
+            },
+            keepUnusedDataFor: 0,
+            providesTags: [Tags.MyOrders]
         }),
+        orderPayNow: builder.mutation({
+            query: (orderId) => ({
+                url: `/orders/pay-now/${orderId}`,
+                method: "GET",
+            })
+        }),
+        cancelOrder: builder.mutation({
+            query: (orderId) => ({
+                url: `/orders/cancel/${orderId}`,
+                method: "GET",
+            }),
+            invalidatesTags: [Tags.MyOrders]
+        }),
+        initiateRefund: builder.mutation({
+            query: (orderId) => ({
+                url: `/orders/initiate-refund/${orderId}`,
+                method: "GET",
+            }),
+            invalidatesTags: [Tags.Order]
+        })
     }),
 })
-export const {usePlaceOrderMutation, useGetOrdersQuery, useGetSingleOrderQuery, useUpdateOrderMutation, useGetMyOrderQuery} = orderApi;
+export const {usePlaceOrderMutation, useGetOrdersQuery, useGetSingleOrderQuery, useUpdateOrderMutation, useGetMyOrderQuery, useOrderPayNowMutation, useCancelOrderMutation, useInitiateRefundMutation} = orderApi;

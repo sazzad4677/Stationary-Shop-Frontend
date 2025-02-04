@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import {useState} from "react"
 import {Button} from "@/components/ui/button"
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card"
@@ -7,18 +8,10 @@ import {useDeleteProductMutation, useGetProductsQuery} from "@/redux/features/pr
 import ProductManagement from "@/pages/Dashboard/ProductManagement.component.tsx";
 import Table from "@/components/features/Table.tsx";
 import {TProduct} from "@/pages/Products";
-import {DownloadCloudIcon, Edit, Trash2} from "lucide-react";
+import {DownloadCloudIcon, Edit} from "lucide-react";
 import exportToExcel from "@/utils/exportToExcel.ts";
-import {
-    AlertDialog, AlertDialogCancel,
-    AlertDialogContent, AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger
-} from "@/components/ui/alert-dialog.tsx";
-import {AlertDialogAction} from "@radix-ui/react-alert-dialog";
 import {handleToastPromise} from "@/utils/handleToastPromise.ts";
+import ConfirmationModal from "@/components/features/ConfirmationModal.tsx";
 
 
 export default function ProductsPage() {
@@ -68,7 +61,6 @@ export default function ProductsPage() {
         }
     ];
     const handleExport = () => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const exportData: Partial<TProduct>[] = productData?.data?.map(({
                                                                             _id,
                                                                             createdAt,
@@ -115,7 +107,7 @@ export default function ProductsPage() {
                                 >
                                     <Edit/> Edit
                                 </Button>
-                                <DeleteConfirmationModal handleConfirm={() => handleDeleteProduct(item._id)}
+                                <ConfirmationModal handleConfirm={() => handleDeleteProduct(item._id)}
                                                          itemName={item.name}/>
                             </div>
                         )}
@@ -124,39 +116,5 @@ export default function ProductsPage() {
                 </CardContent>
             </Card>
         </Layout>
-    )
-}
-
-const DeleteConfirmationModal = ({handleConfirm, itemName}: { handleConfirm: () => void; itemName: string }) => {
-    return (
-        <AlertDialog>
-            <AlertDialogTrigger asChild>
-                <Button variant="destructive" size="sm">
-                    <Trash2 className="mr-2 h-4 w-4"/>
-                    Delete
-                </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-                <AlertDialogHeader>
-                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                        This action cannot be undone. This will permanently delete {itemName} from our servers.
-                    </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                    <AlertDialogCancel asChild={true}>
-                        <Button variant="default" size="sm">
-                            Cancel
-                        </Button>
-                    </AlertDialogCancel>
-                    <AlertDialogAction asChild={true} onClick={handleConfirm}>
-                        <Button variant="destructive" size="sm">
-                            <Trash2 className="mr-2 h-4 w-4"/>
-                            Delete
-                        </Button>
-                    </AlertDialogAction>
-                </AlertDialogFooter>
-            </AlertDialogContent>
-        </AlertDialog>
     )
 }

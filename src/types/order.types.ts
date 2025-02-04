@@ -5,8 +5,12 @@ export interface TOrder {
     _id: string
     orderId: string
     userId: TUser
-    products: TProduct[]
+    products: {
+        productId: TProduct
+        quantity: number
+    }[]
     totalPrice: number
+    isPaid: boolean
     status: string
     createdAt: string
     updatedAt: string
