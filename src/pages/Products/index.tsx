@@ -69,7 +69,7 @@ export default function AllProductsPage() {
     }
 
     useEffect(() => {
-        if (productData?.data) {
+        if (productData?.data && formRef.current?.getValues().priceRange[0] === 0 && formRef.current?.getValues().priceRange[1] === 0) {
             formRef.current?.setValue("priceRange", [productData?.meta.minPrice, productData?.meta.maxPrice])
         }
     }, [productData]);

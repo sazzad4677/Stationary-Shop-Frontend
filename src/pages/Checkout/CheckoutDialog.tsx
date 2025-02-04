@@ -3,13 +3,12 @@ import {Dialog, DialogContent, DialogHeader, DialogTitle} from "@/components/ui/
 import {Button} from "@/components/ui/button";
 import {useStripe, useElements, Elements, PaymentElement} from "@stripe/react-stripe-js";
 import {loadStripe} from "@stripe/stripe-js";
-import {useAppDispatch, useAppSelector} from "@/redux/hooks.ts";
+import {useAppDispatch} from "@/redux/hooks.ts";
 import toast from "react-hot-toast";
 import {resetCart} from "@/redux/features/cart/cart.slice.ts";
 import {useNavigate} from "react-router";
-import {usePlaceOrderMutation} from "@/redux/features/order/order.api.ts";
 
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY as string);
+
 
 const CheckoutForm = ({clientSecret, setIsOpen}: {
     clientSecret: string,
@@ -18,10 +17,8 @@ const CheckoutForm = ({clientSecret, setIsOpen}: {
     const stripe = useStripe();
     const elements = useElements();
     const [isLoading, setIsLoading] = useState(false);
-    const dispatch = useAppDispatch();
     const navigate = useNavigate();
-    const [orderItem] = usePlaceOrderMutation(undefined)
-    const orderData = useAppSelector(state => state.order.orderData)
+    const dispatch = useAppDispatch();
 
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
@@ -42,8 +39,9 @@ const CheckoutForm = ({clientSecret, setIsOpen}: {
             elements,
             clientSecret,
             confirmParams: {
-                return_url: 'http://localhost:5173/order-placed',
+                return_url: `http://localhost:5173/order-placed`,
             },
+            redirect: "if_required",
         })
         if (stripeData.error) {
             toast.error(`Payment failed: ${stripeData.error.message}`);
@@ -51,25 +49,9 @@ const CheckoutForm = ({clientSecret, setIsOpen}: {
         } else {
             toast.success("Payment successful!");
             setIsLoading(false);
-            try {
-                await toast.promise(
-                    (async () => {
-                        if (orderData === null) return;
-                        await orderItem(orderData).unwrap();
-                        dispatch(resetCart());
-                        navigate("/order-placed");
-                    })(),
-                    {
-                        loading: 'Loading...',
-                        success: 'Order Placed Successfully!',
-                        error: (err: { data: { message: string; }; }) => err?.data?.message,
-                    },
-                    {id: 'order-placed'}
-                );
-            } catch (error) {
-                console.error('An error occurred:', error);
-                toast.error('Something went wrong! Please try again.', {id: 'order-placed'});
-            }
+            setIsOpen(false);
+            dispatch(resetCart());
+            navigate("/order-placed");
         }
     };
 
@@ -95,13 +77,14 @@ const CheckoutDialog = ({isOpen, setIsOpen, clientSecret}: {
     setIsOpen: Dispatch<SetStateAction<boolean>>,
     clientSecret: string
 }) => {
+    const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY as string);
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
-            <DialogContent className={"overflow-y-auto h-auto "} onInteractOutside={(e) =>e.preventDefault() }>
+            <DialogContent className={"overflow-y-auto min-h-[50vh] max-h-[90vh]"} onInteractOutside={(e) =>e.preventDefault() }>
                 <DialogHeader>
                     <DialogTitle>Complete Your Payment</DialogTitle>
                 </DialogHeader>
-                <Elements stripe={stripePromise} options={{
+                {stripePromise && <Elements stripe={stripePromise} options={{
                     clientSecret,
                     appearance: {
                         theme: "flat",
@@ -111,7 +94,7 @@ const CheckoutDialog = ({isOpen, setIsOpen, clientSecret}: {
                     }
                 }}>
                     <CheckoutForm clientSecret={clientSecret} setIsOpen={setIsOpen}/>
-                </Elements>
+                </Elements>}
             </DialogContent>
         </Dialog>
     );

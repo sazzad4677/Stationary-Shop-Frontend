@@ -1,4 +1,4 @@
-import {useState} from "react"
+import {useEffect, useRef, useState} from "react"
 import {Card, CardContent, CardHeader} from "@/components/ui/card"
 import {Layout} from "@/components/layout/DashboardLayout"
 import Table from "@/components/features/Table"
@@ -18,19 +18,29 @@ import {Button} from "@/components/ui/button"
 import {MoreHorizontal, FileText, Printer, DownloadCloudIcon} from 'lucide-react'
 import {Badge} from "@/components/ui/badge"
 import {OrderDetailsDialog} from "@/pages/Dashboard/OrderDetails.component.tsx";
+import {useReactToPrint} from "react-to-print";
+import InvoicePDF from "@/pages/Dashboard/OrderPrintPDF.component.tsx";
+import exportToExcel from "@/utils/exportToExcel.ts";
 
 export default function OrdersPage() {
     const [viewProduct, setViewProduct] = useState<boolean | string>(false)
+    const invoiceRef = useRef(null)
+    const [singleOrderData, setSingleOrderData] = useState<TOrder | null>();
+    const [isPrinting, setIsPrinting] = useState<boolean>(false);
     const [query, setQuery] = useState<Record<string, unknown>>({
         page: 1,
         limit: 10,
         sortBy: "-createdAt",
         search: "",
-        dateRange: null,
     })
-
     const {data: orderData, isFetching} = useGetOrdersQuery(query)
     const [updateStatus, {isLoading}] = useUpdateOrderMutation(undefined)
+    const handlePrint = useReactToPrint({
+        contentRef: invoiceRef,
+        onAfterPrint: () => {
+            setSingleOrderData(null)
+        }
+    })
 
     const statusColors: Record<string, string> = {
         Pending: "bg-yellow-500 text-white",
@@ -96,15 +106,28 @@ export default function OrdersPage() {
         );
     }
 
-
     const handleExport = () => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const exportData: Partial<TOrder>[] = orderData?.data?.map(({
+                                                                  _id,
+                                                                  createdAt,
+                                                                  updatedAt,
+                                                                  ...rest
+                                                              }: TOrder) => rest) || [];
+        exportToExcel<Partial<TOrder>>(exportData, 'Orders');
+    };
 
-    }
+    useEffect(() => {
+        if (singleOrderData && isPrinting) {
+            handlePrint();
+        }
+    }, [singleOrderData, isPrinting]);
+
 
     return (
         <Layout>
             <Card>
-                <CardHeader >
+                <CardHeader>
                     <div className="flex items-center justify-between space-x-2">
                         <div>
                             <Button onClick={handleExport}>
@@ -114,7 +137,13 @@ export default function OrdersPage() {
                         </div>
                         <div className="flex space-x-2">
                             {Object.entries(statusColors).map(([status, color]) => (
-                                <Badge key={status} variant="outline" className={color}>
+                                <Badge key={status} variant="outline" className={color}
+                                    // onClick={() => {
+                                    //     setQuery((prev) => {
+                                    //         return {...prev, "filter[status]": status}
+                                    //     })
+                                    // }}
+                                >
                                     {status}
                                 </Badge>
                             ))}
@@ -150,7 +179,10 @@ export default function OrdersPage() {
                                         <FileText className="mr-2 h-4 w-4"/>
                                         View Order Details
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => console.log("Print order", item.orderId)}>
+                                    <DropdownMenuItem onClick={ () => {
+                                        setSingleOrderData(item)
+                                        setIsPrinting(true)
+                                    }}>
                                         <Printer className="mr-2 h-4 w-4"/>
                                         Print Order
                                     </DropdownMenuItem>
@@ -162,6 +194,7 @@ export default function OrdersPage() {
                 </CardContent>
             </Card>
             <OrderDetailsDialog viewDetails={viewProduct} setViewDetailsClose={setViewProduct}/>
+            {<div className="hidden">{singleOrderData && <InvoicePDF order={singleOrderData} ref={invoiceRef}/>}</div>}
         </Layout>
     )
 }

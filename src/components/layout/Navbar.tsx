@@ -50,7 +50,7 @@ const Navbar = () => {
             <div className="container mx-auto flex h-16 items-center justify-between">
                 {/* Logo */}
                 <Link to="/" className="text-2xl font-heading font-bold tracking-widest text-primary">
-                    <img src="/logo.png" alt="Stationary Shop" className="h-16"/>
+                    <img src="/logo.png" alt="Stationary Shop" className="h-8"/>
                 </Link>
 
                 {/* Desktop Navigation Links */}

@@ -130,6 +130,7 @@ export default function CartPage() {
                     <CardFooter className={"w-full"}>
                         <Button
                             onClick={proceedToCheckout}
+                            disabled={!cartItems?.length}
                             className={"w-full"}
                         >
                             Proceed to Checkout

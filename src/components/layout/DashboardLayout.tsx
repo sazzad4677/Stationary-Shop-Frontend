@@ -85,7 +85,7 @@ export function Layout({children}: LayoutProps) {
                     <SidebarHeader
                         className="flex h-16 items-center border-b border-gray-200 px-6 dark:border-gray-800">
                         <Link className="flex items-center gap-2 font-semibold h-full" to="/dashboard">
-                            <img src="/logo.png" alt="Stationary Shop" className="h-16"/>
+                            <img src="/logo.png" alt="Stationary Shop" className="h-8"/>
                         </Link>
                     </SidebarHeader>
                     <SidebarContent>
@@ -100,11 +100,10 @@ export function Layout({children}: LayoutProps) {
                             <Menu className="h-6 w-6"/>
                         </SidebarTrigger>
                         <h1 className="text-lg md:text-2xl font-semibold text-gray-900 dark:text-white">
-                            {pathname === "/dashboard/admin/users"
-                                ? "User Management"
-                                : pathname === "/dashboard"
-                                    ? "Dashboard"
-                                    : "Product Management"}
+                            {pathname === "/dashboard" && "Dashboard"}
+                            {pathname === "/dashboard/admin/users" && "User Management"}
+                            {pathname === "/dashboard/admin/products" && "Products Management"}
+                            {pathname === "/dashboard/admin/orders" && "Orders Management"}
                         </h1>
                     </div>
                     <DropdownMenu>
@@ -125,9 +124,9 @@ export function Layout({children}: LayoutProps) {
                                 </div>
                             </DropdownMenuItem>
                             <DropdownMenuSeparator/>
-                            {user?.role === "admin" && <DropdownMenuItem asChild>
+                             <DropdownMenuItem asChild>
                                 <Link to="/">Go to Main Page</Link>
-                            </DropdownMenuItem>}
+                            </DropdownMenuItem>
                             <DropdownMenuItem asChild>
                                 <Link to="/profile">Profile</Link>
                             </DropdownMenuItem>

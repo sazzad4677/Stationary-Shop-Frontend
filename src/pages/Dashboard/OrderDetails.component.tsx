@@ -46,15 +46,15 @@ export function OrderDetailsDialog({ viewDetails, setViewDetailsClose }: OrderDe
 
     return (
         <Dialog open={Boolean(viewDetails)} onOpenChange={setViewDetailsClose}>
-            <DialogContent className="w-[90vw] max-w-5xl max-h-[90vh] overflow-y-auto">
+            <DialogContent className="w-[95vw] max-w-5xl max-h-[95vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle className="text-2xl font-bold">Order Details</DialogTitle>
                 </DialogHeader>
                 {order && (
-                    <div className="mt-4 space-y-6">
-                        <div className="flex justify-between items-center">
-                            <h2 className="text-xl font-semibold">Order #{order.orderId}</h2>
-                            <Badge className={statusColors[order.status]}>{order.status}</Badge>
+                    <div className="mt-4 space-y-6 overflow-x-auto">
+                        <div className="flex flex-col md:flex-row justify-between md:items-center items-start gap-y-2 md:gap-y-0">
+                            <h2 className="text-xl font-semibold">Order #{order?.orderId}</h2>
+                            <Badge variant={"outline"} className={statusColors[order?.status]}>{order?.status}</Badge>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <Card>
@@ -119,7 +119,7 @@ export function OrderDetailsDialog({ viewDetails, setViewDetailsClose }: OrderDe
                             <CardHeader>
                                 <CardTitle>Order Items</CardTitle>
                             </CardHeader>
-                            <CardContent>
+                            <CardContent className={"overflow-x-auto"}>
                                 <Table<TProduct>
                                     data={order.products || []}
                                     columns={columns}

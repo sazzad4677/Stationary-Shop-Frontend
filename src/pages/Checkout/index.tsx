@@ -1,4 +1,4 @@
-import {useState} from "react"
+import {useEffect, useState} from "react"
 import {ChevronRight, CreditCard, Edit} from "lucide-react"
 import {Button} from "@/components/ui/button"
 import {Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter} from "@/components/ui/card"
@@ -48,6 +48,11 @@ export default function CheckoutPage() {
     const tax = subtotal * 0.1
     const total = subtotal + tax
     const shippingFee = total > 50 ? 0 : Number((total * 0.01).toFixed(2))
+    useEffect(() => {
+        if(cartItems.length === 0) {
+            toast.error("Your cart is empty. Please add some products to your cart.", {id: "no-item-in-cart"})
+        }
+    },[])
     return (
         <div className="container mx-auto py-10 px-4">
             <div className="mb-8">
@@ -69,7 +74,7 @@ export default function CheckoutPage() {
                         <div className={"space-y-4"}>
                             <div className="flex justify-between items-center">
                                 <h3 className="text-lg font-semibold">Shipment Information</h3>
-                                <Button type={"button"} variant="outline" size="sm"
+                                <Button type={"button"} variant="outline" size="sm" disabled={!cartItems?.length}
                                         onClick={() => setIsEditing(!isEditing)}>
                                     {isEditing ? (
                                         "Cancel"
@@ -85,7 +90,7 @@ export default function CheckoutPage() {
                         </div>
                     </CardContent>
                     {!isEditing && <CardFooter className="flex justify-between">
-                        <Button onClick={placeOrder} type="button" className="w-full" loading={isLoading}>
+                        <Button disabled={!cartItems?.length} onClick={placeOrder} type="button" className="w-full" loading={isLoading}>
                             Place Order
                         </Button>
                         <CheckoutDialog isOpen={isPaymentDialogOpen} setIsOpen={setIsPaymentDialogOpen}

@@ -68,11 +68,11 @@ export default function AboutPage() {
                 <p className="mb-8 text-xl text-muted-foreground">
                     Welcome to Pappier, your destination for high-quality stationery that sparks creativity and organization.
                 </p>
-                <div className="relative h-[400px] rounded-lg overflow-hidden">
+                <div className="relative h-[400px] flex rounded-lg overflow-hidden justify-center items-center">
                     <img
                         src="/logo.png"
-                        alt="Team working together"
-                        className="transition-transform duration-5000 ease-in-out hover:scale-110 object-cover"
+                        alt="Logo"
+                        className="object-cover"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                     <div className="absolute bottom-4 left-4 right-4 text-white">
