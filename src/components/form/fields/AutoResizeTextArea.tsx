@@ -5,7 +5,7 @@ import {ReactNode} from "react";
 import {cn} from "@/lib/utils.ts";
 import {Button} from "@/components/ui/button.tsx";
 import {Sparkles, X} from "lucide-react";
-import {Textarea} from "@/components/ui/textarea.tsx";
+import {Editor} from "@/components/ui/editor.tsx";
 
 export type TextAreaFieldProps<T extends FieldValues> = {
     name: Path<T>;
@@ -46,7 +46,7 @@ export type TextAreaFieldProps<T extends FieldValues> = {
  */
 
 
-const TextAreaField = <T extends FieldValues>({
+const AutoResizeTextArea = <T extends FieldValues>({
                                                   name,
                                                   label,
                                                   placeholder,
@@ -91,7 +91,7 @@ const TextAreaField = <T extends FieldValues>({
                     </div>
                     <FormControl>
                         <div className={"relative flex items-center gap-2"}>
-                            <Textarea
+                            <Editor
                                 {...field}
                                 placeholder={placeholder}
                                 className={cn(
@@ -128,4 +128,4 @@ const TextAreaField = <T extends FieldValues>({
     );
 };
 
-export default TextAreaField;
+export default AutoResizeTextArea;

@@ -1,15 +1,14 @@
-import { Heart, ShoppingCart, CheckCircle, XCircle } from "lucide-react"
-import { useEffect, useState } from "react"
-import { Card, CardContent } from "@/components/ui/card"
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import type { TProduct } from "@/pages/Products"
-import { useAppDispatch, useAppSelector } from "@/redux/hooks"
-import { addItem } from "@/redux/features/cart/cart.slice"
-import { Link } from "react-router"
+import {Heart, ShoppingCart, CheckCircle, XCircle} from "lucide-react"
+import {useEffect, useState} from "react"
+import {Card, CardContent} from "@/components/ui/card"
+import {cn} from "@/lib/utils"
+import {Button} from "@/components/ui/button"
+import {useAppDispatch, useAppSelector} from "@/redux/hooks"
+import {addItem} from "@/redux/features/cart/cart.slice"
+import {Link} from "react-router"
 
-export function ProductCard(product: TProduct) {
-    const { _id, name, brand, price, category, quantity, inStock } = product
+export function ProductCard(product: any) {
+    const {_id, name, brand, price, category, quantity, inStock} = product
     const dispatch = useAppDispatch()
     const cartItems = useAppSelector((state) => state.cart.items)
     const [isInCart, setIsInCart] = useState(false)
@@ -39,28 +38,13 @@ export function ProductCard(product: TProduct) {
         console.log(`Buying ${name} now`)
     }
 
-    const [imageUrl, setImageUrl] = useState<string | null>(null)
-
-    // Random Image
-    useEffect(() => {
-        const fetchImage = async () => {
-            try {
-                const response = await fetch(`https://picsum.photos/1920/1080?random&category=${category}`)
-                setImageUrl(response.url)
-            } catch (error) {
-                console.error("Error fetching image:", error)
-                setImageUrl("/no-image.svg") // Fallback image
-            }
-        }
-
-        fetchImage()
-    }, [category])
-
     return (
-        <Card className="relative w-full max-w-sm overflow-hidden rounded-lg border bg-white shadow-md transition-transform hover:scale-105">
-            <Link to={`/products/${_id}`} className="relative aspect-square w-full overflow-hidden rounded-t-lg bg-gray-100">
+        <Card
+            className="relative w-full max-w-sm overflow-hidden rounded-lg border bg-white shadow-md transition-transform hover:scale-105">
+            <Link to={`/products/${_id}`}
+                  className="relative aspect-square w-full overflow-hidden rounded-t-lg bg-gray-100">
                 <img
-                    src={imageUrl || "/no-image.svg"}
+                    src={product.images?.[0] || "/no-image.svg"}
                     alt={name}
                     className="w-full transition-transform duration-300 group-hover:scale-110"
                     style={{
@@ -69,7 +53,7 @@ export function ProductCard(product: TProduct) {
                     }}
                 />
                 <button className="absolute right-3 top-3 rounded-full bg-white p-2 shadow hover:bg-gray-100">
-                    <Heart className={cn("h-5 w-5 text-gray-700 transition-colors")} />
+                    <Heart className={cn("h-5 w-5 text-gray-700 transition-colors")}/>
                     <span className="sr-only">Add to favorites</span>
                 </button>
             </Link>
@@ -88,12 +72,12 @@ export function ProductCard(product: TProduct) {
           >
             {inStock ? (
                 <>
-                    <CheckCircle className="h-4 w-4" />
+                    <CheckCircle className="h-4 w-4"/>
                     In Stock ({quantity})
                 </>
             ) : (
                 <>
-                    <XCircle className="h-4 w-4" />
+                    <XCircle className="h-4 w-4"/>
                     Out of Stock
                 </>
             )}
@@ -108,12 +92,12 @@ export function ProductCard(product: TProduct) {
                     >
                         {isInCart ? (
                             <>
-                                <CheckCircle className="mr-2 h-4 w-4" />
+                                <CheckCircle className="mr-2 h-4 w-4"/>
                                 In Cart ({cartQuantity})
                             </>
                         ) : (
                             <>
-                                <ShoppingCart className="mr-2 h-4 w-4" />
+                                <ShoppingCart className="mr-2 h-4 w-4"/>
                                 Add to Cart
                             </>
                         )}

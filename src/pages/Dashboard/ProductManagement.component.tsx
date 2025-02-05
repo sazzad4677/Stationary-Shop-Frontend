@@ -7,7 +7,7 @@ import {
     DialogTrigger
 } from "@/components/ui/dialog.tsx";
 import {Button} from "@/components/ui/button.tsx";
-import {Plus} from "lucide-react";
+import {Plus, Sparkles} from "lucide-react";
 import {GenericForm, TGenericFormRef} from "@/components/form/GenericForm.tsx";
 import {productSchema} from "@/pages/Dashboard/Products.schema.ts"
 import type {z} from "zod";
@@ -23,6 +23,9 @@ import {
     useUpdateProductMutation
 } from "@/redux/features/admin/products/products.api.ts";
 import MultiImageField from "@/components/form/fields/MultipleImageField.tsx";
+import Editor from "@/components/form/rich-text/editor.tsx";
+import {Controller} from "react-hook-form";
+import {Label} from "@/components/ui/label.tsx";
 
 type TProductManageProps = {
     isDialogOpen: boolean;
@@ -179,7 +182,7 @@ const ProductManagement = ({
                     <Plus className="mr-2 h-4 w-4"/> Add Product
                 </Button>
             </DialogTrigger>
-            <DialogContent className="w-[70vw] max-w-4xl  max-h-[80vh] overflow-y-auto">
+            <DialogContent className="w-[70vw] max-w-4xl  max-h-[80vh] overflow-y-auto" onInteractOutside={(e) => e.preventDefault()}>
                 <DialogHeader>
                     <DialogTitle>{editingProduct ? "Edit Product" : "Add New Product"}</DialogTitle>
                 </DialogHeader>
@@ -203,15 +206,41 @@ const ProductManagement = ({
                             <GenericForm.Text<TProduct> name="quantity" label="Quantity" required
                                                         placeholder="Product Quantity"/>
                         </div>
-                        <GenericForm.TextArea<TProduct>
+                        {/*<GenericForm.AutoResizeTextEditor<TProduct>*/}
+                        {/*    name="description"*/}
+                        {/*    label="Description"*/}
+                        {/*    placeholder={"Enter Product Description"}*/}
+                        {/*    required*/}
+                        {/*    resizeable*/}
+                        {/*    ai={true}*/}
+                        {/*    aiAction={aiAction}*/}
+                        {/*    loading={isLoading}*/}
+                        {/*/>*/}
+                        <Controller
                             name="description"
-                            label="Description"
-                            placeholder={"Enter Product Description"}
-                            required
-                            resizeable
-                            ai={true}
-                            aiAction={aiAction}
-                            loading={isLoading}
+                            render={({field}) => (
+                                <div className={"grid gap-2"}>
+                                    <div className={"flex justify-between items-center"}>
+                                        <p><Label>Description<span className={"text-destructive"}>*</span></Label></p>
+                                        <div>
+                                            <Button
+                                                type={"button"}
+                                                onClick={aiAction}
+                                                disabled={isLoading}
+                                                variant={"ghost"}
+                                            >
+                                                <Sparkles className={"text-primary-foreground"}/> Generate
+                                                With AI
+                                            </Button>
+                                        </div>
+                                    </div>
+                                    <Editor
+                                        value={field.value ?? ""}
+                                        placeholder="Start typing content..."
+                                        onChange={field.onChange}
+                                    />
+                                </div>
+                            )}
                         />
                         {<MultiImageField<TProduct>
                             name="images"

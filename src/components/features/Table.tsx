@@ -53,7 +53,7 @@ const Table = <T extends Record<string, any>>({
                                                   allowPagination = true,
                                                   allowSorting = true,
                                                   debounceDelay = 300, // Default debounce delay
-                                                  height
+                                                  // height
                                               }: TableProps<T>) => {
     // Internal state for search, sorting, pagination
     const [searchTerm, setSearchTerm] = useState("");
@@ -126,7 +126,7 @@ const Table = <T extends Record<string, any>>({
             </div>
 
             {/* Table Content */}
-            <ScrollArea className={`h-[${height || "500px"}]`}>
+            <ScrollArea className={`h-[600px]`}>
                 <BaseTable>
                     <TableHeader className="sticky -top-1 bg-background z-10">
                         <TableRow>
