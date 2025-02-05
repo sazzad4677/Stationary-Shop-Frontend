@@ -1,7 +1,7 @@
 import {
     Dialog,
     DialogContent,
-    DialogDescription,
+    DialogDescription, DialogFooter,
     DialogHeader,
     DialogTitle,
     DialogTrigger
@@ -16,10 +16,10 @@ import {
 } from "@/redux/features/products/products.api.ts";
 import toast from "react-hot-toast";
 import {productCategories} from "@/constants/global.ts";
-import {useEffect, useRef} from "react";
+import {useRef} from "react";
 import {useGenerateDescriptionMutation} from "@/redux/services/openAiApi.ts";
 import {useCreateProductMutation, useUpdateProductMutation} from "@/redux/features/admin/products/products.api.ts";
-import MultiImageField from "@/components/form/MultipleImageField.tsx";
+import MultiImageField from "@/components/form/fields/MultipleImageField.tsx";
 
 type TProductManageProps = {
     isDialogOpen: boolean;
@@ -48,10 +48,24 @@ const ProductManagement = ({
                                setIsDialogOpen,
                            }: TProductManageProps) => {
     const formRef = useRef<TGenericFormRef<TProduct>>(null)
+
     const [generateDescription, {isLoading}] = useGenerateDescriptionMutation();
     const [addProduct, {isLoading: isAddProductLoading,}] = useCreateProductMutation(undefined)
     const [updateProduct, {isLoading: isUpdateProductLoading}] = useUpdateProductMutation(undefined);
-    const {data, refetch} = useGetSingleProductQuery(editingProduct, {skip: !editingProduct,});
+    const {data} = useGetSingleProductQuery(editingProduct, {skip: !editingProduct,});
+    const updatedData = {
+        name: data?.name || '',
+        brand: data?.brand || '',
+        price: data?.price || 0,
+        category: data?.category || '',
+        description: data?.description || '',
+        quantity: data?.quantity || 0,
+        inStock: data?.inStock || false,
+        images: data?.images?.map((image) => ({
+            file: undefined,
+            preview: typeof image === "string" ? image : "",
+        })) ?? [],
+    }
     const categoryOptions = productCategories.map((item) => ({
         label: item,
         value: item,
@@ -89,14 +103,24 @@ const ProductManagement = ({
     }
 
     const handleUpdateProduct = async (updatedProduct: TProduct) => {
+        const formValues = {...updatedProduct};
+        const formData = new FormData();
+        formValues?.images?.forEach((image) => {
+            if (image.file) {
+                formData.append("images", image.file);
+            }
+        });
+        const images = formValues?.images?.map((v) => v.preview).filter(
+            (v) => !v.includes("blob")
+        )
+        const newValues = {...formValues, images}
+        formData.append("data", JSON.stringify(newValues));
         try {
             await toast.promise(
                 (async () => {
                     await updateProduct({
                         productId: editingProduct as string,
-                        productData: {
-                            ...updatedProduct,
-                        },
+                        productData: formData,
                     }).unwrap();
                     setIsDialogOpen(false)
                     setEditingProduct(false)
@@ -123,31 +147,6 @@ const ProductManagement = ({
             await handleAddProduct(values)
         }
     }
-    useEffect(() => {
-        if (editingProduct) {
-            refetch();
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [editingProduct]);
-    useEffect(() => {
-        if (data && formRef.current) {
-            const {name, brand, price, category, description, quantity, inStock} = data;
-            const newInitialValues = {
-                name,
-                brand,
-                price,
-                category,
-                description,
-                quantity,
-                inStock,
-                // images: images.map((image: string) => ({
-                //     preview: image,
-                //     file: undefined
-                // })),
-            }
-            formRef.current.reset(newInitialValues);
-        }
-    }, [data]);
     const aiAction = async () => {
         const {name, brand, category} = formRef.current?.getValues() ?? {};
         if (!name || !brand || !category) {
@@ -176,7 +175,8 @@ const ProductManagement = ({
                     <DialogTitle>{editingProduct ? "Edit Product" : "Add New Product"}</DialogTitle>
                 </DialogHeader>
                 <DialogDescription/>
-                <GenericForm ref={formRef} onSubmit={onSubmit} initialValues={initialValues} schema={productSchema}>
+                <GenericForm ref={formRef} onSubmit={onSubmit} initialValues={initialValues} schema={productSchema}
+                             values={updatedData}>
                     <div className="space-y-2 mb-2">
                         <div className={"grid grid-cols-1 md:grid-cols-2 gap-x-2"}>
                             <GenericForm.Text<TProduct> label="Name"
@@ -204,15 +204,19 @@ const ProductManagement = ({
                             aiAction={aiAction}
                             loading={isLoading}
                         />
-                        {!editingProduct && <MultiImageField<TProduct>
+                        {<MultiImageField<TProduct>
                             name="images"
                             label="Product Images"
                             required
+                            maxLength={4}
                         />}
 
                     </div>
-                    <Button type="submit"
-                            loading={isAddProductLoading || isUpdateProductLoading}>{editingProduct ? "Update Product" : "Add Product"}</Button>
+                    <DialogFooter>
+                        <Button type="submit"
+                                loading={isAddProductLoading || isUpdateProductLoading}>{editingProduct ? "Update Product" : "Add Product"}
+                        </Button>
+                    </DialogFooter>
                 </GenericForm>
             </DialogContent>
         </Dialog>

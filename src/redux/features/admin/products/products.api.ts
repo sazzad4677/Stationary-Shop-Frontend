@@ -1,5 +1,4 @@
 import {baseApi} from "@/redux/api/baseApi.ts";
-import {TProduct} from "@/pages/Products";
 import {Tags} from "@/constants/global.ts";
 
 const productApi = baseApi.injectEndpoints({
@@ -17,7 +16,7 @@ const productApi = baseApi.injectEndpoints({
         updateProduct: builder.mutation({
             query: ({productId, productData}: {
                 productId: string;
-                productData: Omit<TProduct, "_id" | "updatedAt" | "createdAt"| "__v">
+                productData: any
             }) => {
                 return {
                     url: `/products/${productId}`,

@@ -8,7 +8,7 @@ import {useDeleteProductMutation, useGetProductsQuery} from "@/redux/features/pr
 import ProductManagement from "@/pages/Dashboard/ProductManagement.component.tsx";
 import Table from "@/components/features/Table.tsx";
 import {TProduct} from "@/pages/Products";
-import {DownloadCloudIcon, Edit} from "lucide-react";
+import {DownloadCloudIcon, Edit, Plus} from "lucide-react";
 import exportToExcel from "@/utils/exportToExcel.ts";
 import {handleToastPromise} from "@/utils/handleToastPromise.ts";
 import ConfirmationModal from "@/components/features/ConfirmationModal.tsx";
@@ -80,7 +80,13 @@ export default function ProductsPage() {
                                     className="flex items-center gap-1"><DownloadCloudIcon/>Export</Button>
                         </div>
                     </CardTitle>
-                    {<ProductManagement
+                    <Button onClick={() => {
+                        setEditingProduct(false)
+                        setIsDialogOpen(true)
+                    }}>
+                        <Plus className="mr-2 h-4 w-4"/> Add Product
+                    </Button>
+                    {isDialogOpen && <ProductManagement
                         isDialogOpen={isDialogOpen} setIsDialogOpen={setIsDialogOpen}
                         editingProduct={editingProduct} setEditingProduct={setEditingProduct}
                     />}
@@ -108,7 +114,7 @@ export default function ProductsPage() {
                                     <Edit/> Edit
                                 </Button>
                                 <ConfirmationModal handleConfirm={() => handleDeleteProduct(item._id)}
-                                                         itemName={item.name}/>
+                                                   itemName={item.name}/>
                             </div>
                         )}
                         emptyMessage="No products found"

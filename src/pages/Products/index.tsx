@@ -21,7 +21,11 @@ export interface TProduct {
     quantity: number
     inStock: boolean
     updatedAt: string
-    createdAt: string
+    createdAt: string,
+    images: [
+        file: File,
+        preview: string,
+    ]
     __v: number
 }
 
