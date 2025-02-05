@@ -79,7 +79,7 @@ const TextField = <T extends FieldValues>({
                                 disabled={disabled}
                                 autoComplete={autoComplete}
                             />
-                            {loading && <LoadingSpinner className={"absolute right-4"}/>}
+                            {loading && <LoadingSpinner/>}
                             {
                                 action && (
                                     <Button variant={"ghost"} size={"sm"} onClick={action} type={"button"}
