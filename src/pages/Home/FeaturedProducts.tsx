@@ -8,19 +8,16 @@ const FeaturedProducts = () => {
         "filter[inStock]": true
     })
     return (
-        <section className=" py-16">
+        <section className="py-14">
             {/* Section Title */}
-            <div className="container mx-auto text-center px-4 mb-12">
-                <h1 className="text-4xl md:text-5xl font-serif">
-                    START <span className="italic font-light">your next big thing</span>
-                </h1>
+            <div className="container mx-auto text-center px-4 mb-10">
+                <h2 className="text-3xl font-bold text-center mb-12">Featured Products</h2>
                 <div className="flex justify-end mt-4">
-                    <a href="/planners" className="text-primary-foreground hover:underline">
+                    <a href="/products" className="text-primary-foreground hover:underline">
                         Browse All Products
                     </a>
                 </div>
             </div>
-
             {/* Product Grid */}
             <div className="container mx-auto mt-8 grid grid-cols-1 gap-8 px-4 sm:grid-cols-2 lg:grid-cols-4">
                 {productData?.data?.map((product) => (

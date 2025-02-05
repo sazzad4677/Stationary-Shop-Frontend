@@ -76,13 +76,13 @@ const Navbar = () => {
                                             </Link>
                                         </NavigationMenuLink>
                                     </li>
-                                    <ListItem href="/products/notebooks" title="Notebooks">
+                                    <ListItem href="/products?category=notebooks" title="Notebooks">
                                         Premium quality notebooks for every need
                                     </ListItem>
-                                    <ListItem href="/products/planners" title="Planners">
+                                    <ListItem href="/products?category=planners" title="Planners">
                                         Stay organized with our beautiful planners
                                     </ListItem>
-                                    <ListItem href="/products/accessories" title="Accessories">
+                                    <ListItem href="/products?category=accessories" title="Accessories">
                                         Complement your stationery with our accessories
                                     </ListItem>
                                 </ul>

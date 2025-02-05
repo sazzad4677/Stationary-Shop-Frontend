@@ -9,6 +9,7 @@ import CheckoutDialog from "@/pages/Checkout/CheckoutDialog.tsx";
 import {usePlaceOrderMutation} from "@/redux/features/order/order.api.ts";
 import {useAppSelector} from "@/redux/hooks.ts";
 import toast from "react-hot-toast";
+import {selectUser} from "@/redux/features/auth/auth.slice.ts";
 
 export default function CheckoutPage() {
     const [isEditing, setIsEditing] = useState(false)
@@ -17,7 +18,12 @@ export default function CheckoutPage() {
     const [orderItem, {isLoading}] = usePlaceOrderMutation(undefined)
     const cartItems = useAppSelector((state) => state.cart.items);
     const totalPrice = useAppSelector((state) => state.cart.totalPrice);
+    const user = useAppSelector(selectUser)
     const placeOrder = async () => {
+        if (!user?.isShippingAddressAdded) {
+            toast.error("Shipping Address is Required", {id: "shipping-address-required"})
+            return
+        }
         const orderData = {
             products: cartItems.map((item) => {
                 return {
@@ -52,7 +58,7 @@ export default function CheckoutPage() {
         if(cartItems.length === 0) {
             toast.error("Your cart is empty. Please add some products to your cart.", {id: "no-item-in-cart"})
         }
-    },[])
+    },[cartItems.length])
     return (
         <div className="container mx-auto py-10 px-4">
             <div className="mb-8">

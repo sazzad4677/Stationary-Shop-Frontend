@@ -16,6 +16,7 @@ const productApi = baseApi.injectEndpoints({
         updateProduct: builder.mutation({
             query: ({productId, productData}: {
                 productId: string;
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 productData: any
             }) => {
                 return {
@@ -26,9 +27,19 @@ const productApi = baseApi.injectEndpoints({
             },
             invalidatesTags: [Tags.Product]
         }),
+        generateDescription: builder.mutation({
+            query: ({name, brand, category}) => ({
+                url: "/products/generate-product-description",
+                method: "POST",
+                body: {name, brand, category},
+            }),
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            transformResponse: (response: { data: any }) => response.data,
+        }),
     }),
 })
 export const {
     useCreateProductMutation,
-    useUpdateProductMutation
+    useUpdateProductMutation,
+    useGenerateDescriptionMutation,
 } = productApi;

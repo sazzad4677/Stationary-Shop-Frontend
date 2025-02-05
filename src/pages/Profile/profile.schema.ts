@@ -9,8 +9,7 @@ export const shippingAddressSchema = z.object({
     country: z.string().min(1, { message: "Country is required" }),
 })
 
-export const ProfileSchema = z.object({
-    shippingAddress: shippingAddressSchema,
+export const profileSchema = z.object({
     name: z.string().min(1, { message: "Name is required" }),
     email: z.string().email({ message: "Email is invalid" }).min(1, { message: "Email is required" }),
 })

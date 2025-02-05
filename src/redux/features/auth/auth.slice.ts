@@ -7,6 +7,7 @@ export type TUser = {
     role: string,
     name: string,
     email: string,
+    isShippingAddressAdded: boolean,
     iat: number,
     exp: number,
 }

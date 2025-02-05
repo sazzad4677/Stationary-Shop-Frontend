@@ -3,13 +3,14 @@ import {Button} from "@/components/ui/button";
 import {FilterIcon} from "lucide-react";
 import {ProductCard} from "@/components/features/ProductCard";
 import {motion, AnimatePresence} from "framer-motion";
-import {filterSchema, TFilter} from "@/pages/Products/Products.schema";
+import {filterSchema, TFilter} from "@/pages/Products/products.schema.ts";
 import {GenericForm, TGenericFormRef} from "@/components/form/GenericForm.tsx";
 import {useGetProductsQuery} from "@/redux/features/products/products.api.ts";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover.tsx";
 import {useDebounce} from "@/hooks/useDebounce.tsx";
 import {DynamicPagination} from "@/components/features/DynamicPagination.tsx";
 import {productCategories} from "@/constants/global.ts";
+import {useSearchParams} from "react-router";
 
 export interface TProduct {
     _id: string
@@ -43,6 +44,8 @@ export default function AllProductsPage() {
     const [limit, setLimit] = useState(20)
     const formRef = useRef<TGenericFormRef<TFilter>>(null);
     const debounce = useDebounce(searchTerm, 500);
+    const [searchParams] = useSearchParams();
+    const queryValue = searchParams.get('category');
     const [query, setQuery] = useState<Record<string, unknown>>({
         page: currentPage,
         limit: limit,
@@ -90,9 +93,10 @@ export default function AllProductsPage() {
     useEffect(() => {
         setQuery((prev) => ({
             ...prev,
-            search: debounce,
+            search: debounce ,
+            "filter[category]": queryValue ?? "all",
         }));
-    }, [debounce]);
+    }, [debounce, queryValue]);
     return (
         <div className="container mx-auto py-4  min-h-screen px-16">
             <GenericForm ref={formRef}

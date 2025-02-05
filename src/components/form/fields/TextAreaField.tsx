@@ -4,9 +4,9 @@ import {FormControl, FormField, FormLabel, FormItem, FormMessage} from "@/compon
 import {ReactNode} from "react";
 import {cn} from "@/lib/utils.ts";
 import {Button} from "@/components/ui/button.tsx";
-import {AudioLines, X} from "lucide-react";
+import {Sparkles, X} from "lucide-react";
 import {Textarea} from "@/components/ui/textarea.tsx";
-import LoadingSpinner from "@/components/ui/loadingSpinner.tsx";
+import { useEffect, useRef } from "react";
 
 export type TextAreaFieldProps<T extends FieldValues> = {
     name: Path<T>;
@@ -46,6 +46,7 @@ export type TextAreaFieldProps<T extends FieldValues> = {
  * @prop {boolean}[ai] - if Ai allowed to generate
  */
 
+
 const TextAreaField = <T extends FieldValues>({
                                                   name,
                                                   label,
@@ -59,54 +60,105 @@ const TextAreaField = <T extends FieldValues>({
                                                   disabled,
                                                   action,
                                                   resizeable = false,
+                                                  autoResize = true,
                                                   ai = false,
-                                                  aiAction
+                                                  aiAction,
                                               }: TextAreaFieldProps<T>) => {
     const control = useGenericFormContext<T>();
+    const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+
+    // Auto-resize logic
+    useEffect(() => {
+        if (autoResize && textareaRef.current) {
+            const adjustHeight = () => {
+                const textarea = textareaRef.current!;
+                textarea.style.height = "auto"; // Reset the height
+                textarea.style.height = `${textarea.scrollHeight}px`; // Set to the scroll height
+            };
+            adjustHeight();
+            const textarea = textareaRef.current;
+            textarea.addEventListener("input", adjustHeight);
+            return () => textarea.removeEventListener("input", adjustHeight);
+        }
+    }, [autoResize]);
+
+    useEffect(() => {
+        const adjustHeight = () => {
+            if (textareaRef.current) {
+                textareaRef.current.style.height = "auto";
+                textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+        }}
+
+        adjustHeight();
+    }, [textareaRef.current?.value]) // Watch for changes in the value
+
+
     return (
         <FormField
             control={control}
             name={name}
-            render={({field}) => (
+            render={({ field }) => (
                 <FormItem className={cn(className)}>
                     <div className={"flex justify-between items-center mt-1"}>
-                        {label &&
+                        {label && (
                             <FormLabel>
                                 <span>{label}</span>
                                 {required && <span className={"text-destructive"}>*</span>}
-                            </FormLabel>}
-                        {ai && <Button type={"button"} onClick={aiAction} variant={"ghost"}><AudioLines/> Generate {label}</Button>}
+                            </FormLabel>
+                        )}
+                        {ai && (
+                            <Button
+                                type={"button"}
+                                onClick={aiAction}
+                                disabled={loading}
+                                variant={"ghost"}
+                            >
+                                <Sparkles className={"text-primary-foreground"} /> Generate
+                                With AI
+                            </Button>
+                        )}
                     </div>
                     <FormControl>
                         <div className={"relative flex items-center gap-2"}>
                             <Textarea
-                                placeholder={placeholder} {...field}
-                                className={cn(`w-full ${inputClassName}`, action && "pr-12", resizeable === false && "resize-none")}
+                                {...field}
+                                ref={(el) => {
+                                    textareaRef.current = el;
+                                    field.ref(el);
+                                }}
+                                placeholder={placeholder}
+                                className={cn(
+                                    `w-full ${inputClassName}`,
+                                    action && "pr-12",
+                                    resizeable === false && "resize-none"
+                                )}
                                 id={name}
-                                disabled={disabled}/>
-                            {loading && <LoadingSpinner className={"absolute right-4"}/>}
-                            {
-                                action && (
-                                    <Button variant={"ghost"} size={"sm"} onClick={action} type={"button"}
-                                            className={cn("absolute right-0.5 top-0.5", iconClassName)}>
-                                        {Icon ? Icon : <X className={"w-4 h-4 text-destructive"}/>}
-                                    </Button>
-                                )
-                            }
-                            {
-                                !action && Icon && (
-                                    <div className={cn("absolute right-2 top-3", iconClassName)}>
-                                        {Icon}
-                                    </div>
-                                )
-                            }
+                                disabled={disabled}
+                            />
+                            {action && (
+                                <Button
+                                    variant={"ghost"}
+                                    size={"sm"}
+                                    onClick={action}
+                                    loading={loading}
+                                    type={"button"}
+                                    className={cn("absolute right-0.5 top-0.5", iconClassName)}
+                                >
+                                    {Icon ? Icon : <X className={"w-4 h-4 text-destructive"} />}
+                                </Button>
+                            )}
+                            {!action && Icon && (
+                                <div className={cn("absolute right-2 top-3", iconClassName)}>
+                                    {Icon}
+                                </div>
+                            )}
                         </div>
                     </FormControl>
-                    <FormMessage/>
+                    <FormMessage />
                 </FormItem>
             )}
         />
-    )
+    );
 };
 
 export default TextAreaField;

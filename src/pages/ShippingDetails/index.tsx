@@ -2,20 +2,9 @@ import {shippingDetailsSchema, TShippingDetails} from "@/pages/ShippingDetails/s
 import {GenericForm, TGenericFormRef} from "@/components/form/GenericForm.tsx";
 import {useGetCountryQueryQuery} from "@/redux/services/countryInfo.api.ts";
 import {useGetProfileQuery, useUpdateMyProfileMutation} from "@/redux/features/profile/profile.api.ts";
-import {Dispatch, SetStateAction, useEffect, useRef} from "react";
+import {Dispatch, SetStateAction, useRef} from "react";
 import {handleToastPromise} from "@/utils/handleToastPromise.ts";
 import {Button} from "@/components/ui/button.tsx";
-
-const initialValues: TShippingDetails = {
-    fullName: "",
-    addressLine1: "",
-    addressLine2: "",
-    city: "",
-    state: "",
-    zipCode: "",
-    country: "",
-    email: ""
-}
 
 const ShippingDetails = ({isEditing, setIsEditing}: {
     isEditing: boolean,
@@ -29,6 +18,18 @@ const ShippingDetails = ({isEditing, setIsEditing}: {
         label: item.name,
         value: item.name,
     }))
+
+    const initialValues = {
+        email: myData?.email || "",
+        fullName: myData?.name || "",
+        addressLine1: myData?.shippingAddress.address1 || "",
+        addressLine2: myData?.shippingAddress.address2 || "",
+        city: myData?.shippingAddress.city || "",
+        state: myData?.shippingAddress.state || "",
+        zipCode: myData?.shippingAddress.zipCode || "",
+        country: myData?.shippingAddress.country || "",
+    }
+
     const onSubmit = async (values: TShippingDetails) => {
         const {addressLine1, addressLine2, city, state, zipCode, country} = values
         const data = {
@@ -56,34 +57,10 @@ const ShippingDetails = ({isEditing, setIsEditing}: {
         );
     }
 
-    useEffect(() => {
-        if (myData && formRef.current) {
-            formRef.current.reset({
-                email: myData.email || "",
-                fullName: myData.name || "",
-                addressLine1: myData.shippingAddress.address1 || "",
-                addressLine2: myData.shippingAddress.address2 || "",
-                city: myData.shippingAddress.city || "",
-                state: myData.shippingAddress.state || "",
-                zipCode: myData.shippingAddress.zipCode || "",
-                country: myData.shippingAddress.country || "",
-            });
-        }
-    }, [myData]);
-
-
     return (
         <GenericForm ref={formRef} initialValues={{
             ...initialValues,
-            email: myData?.email || "",
-            fullName: myData?.name || "",
-            addressLine1: myData?.shippingAddress.address1 || "",
-            addressLine2: myData?.shippingAddress.address2 || "",
-            city: myData?.shippingAddress.city || "",
-            state: myData?.shippingAddress.state || "",
-            zipCode: myData?.shippingAddress.zipCode || "",
-            country: myData?.shippingAddress.country || "",
-        }} onSubmit={onSubmit} schema={shippingDetailsSchema}>
+        }} values={initialValues} onSubmit={onSubmit} schema={shippingDetailsSchema}>
             {isEditing ? <>
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <div className={"col-span-1 sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4"}>

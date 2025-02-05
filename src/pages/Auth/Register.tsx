@@ -14,8 +14,8 @@ import {Link, useNavigate} from "react-router";
 import {useRef} from "react";
 import {useRegisterMutation} from "@/redux/features/auth/auth.api.ts";
 import {setUser} from "@/redux/features/auth/auth.slice.ts";
-import toast from "react-hot-toast";
 import {useAppDispatch} from "@/redux/hooks.ts";
+import {handleToastPromise} from "@/utils/handleToastPromise.ts";
 
 type TRegister = z.infer<typeof registerSchema>
 
@@ -30,42 +30,21 @@ const RegisterForm = () => {
     const navigate = useNavigate();
     const ref = useRef<TGenericFormRef<TRegister>>(null)
     const [register, {isLoading}] = useRegisterMutation(undefined)
-    // const onSubmit = async (values: TRegister) => {
-    //     try {
-    //         const res = register(values).unwrap();
-    //         // const {data} = await res;
-    //         // dispatch(setUser({
-    //         //     token: data.token,
-    //         // }))
-    //         // navigate("/")
-    //         await toast.promise(res, {
-    //             loading: 'Loading...',
-    //             success: 'Successfully Registered',
-    //             error: (err: { data: { message: string; }; }) => err?.data?.message,
-    //         });
-    //     } catch (error) {
-    //         console.error('An error occurred:', error);
-    //         toast.error('Something went wrong! Please try again.');
-    //     }
-    // }
     const onSubmit = async (values: TRegister) => {
-        try {
-            await toast.promise(
-                (async () => {
-                    const response = await register(values).unwrap();
-                    dispatch(setUser({ token: response.data.token }));
-                    navigate("/");
-                })(),
-                {
-                    loading: 'Loading...',
-                    success: 'Successfully Registered',
-                    error: (err: { data: { message: string } }) => err?.data?.message || 'Something went wrong!',
-                }
-            );
-        } catch (error) {
-            console.error('An error occurred:', error);
-            toast.error('Something went wrong! Please try again.');
-        }
+        await handleToastPromise(
+            async () => {
+                const {data} = await register(values).unwrap();
+                dispatch(setUser({ token: data.token }));
+                navigate("/");
+            },
+            {
+                loading: "Registering...",
+                success: "Successfully Registered!",
+                error: (err: { data: { message: string } }) =>
+                    err?.data?.message || "An error occurred during Registration. Please try again later.",
+            },
+            "register"
+        );
     };
     return (
         <div className={cn("flex flex-col gap-6  py-16")}>

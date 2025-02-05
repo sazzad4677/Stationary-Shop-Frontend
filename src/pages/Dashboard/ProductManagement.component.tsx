@@ -17,8 +17,11 @@ import {
 import toast from "react-hot-toast";
 import {productCategories} from "@/constants/global.ts";
 import {useRef} from "react";
-import {useGenerateDescriptionMutation} from "@/redux/services/openAiApi.ts";
-import {useCreateProductMutation, useUpdateProductMutation} from "@/redux/features/admin/products/products.api.ts";
+import {
+    useCreateProductMutation,
+    useGenerateDescriptionMutation,
+    useUpdateProductMutation
+} from "@/redux/features/admin/products/products.api.ts";
 import MultiImageField from "@/components/form/fields/MultipleImageField.tsx";
 
 type TProductManageProps = {
@@ -148,19 +151,25 @@ const ProductManagement = ({
         }
     }
     const aiAction = async () => {
-        const {name, brand, category} = formRef.current?.getValues() ?? {};
+        const values = formRef.current?.getValues();
+        const {name, brand, category} = values || {};
         if (!name || !brand || !category) {
             toast("Please fill in Name, Brand, and Category first.");
             return;
         }
         try {
-            const generatedText = await generateDescription({name, brand, category}).unwrap();
+            const generatedDescription = await generateDescription({name, brand, category}).unwrap();
             formRef.current?.setValue(
                 "description",
-                generatedText)
+                generatedDescription)
+            toast.success("Successfully generated description.", {
+                id: "generateDescription",
+            });
         } catch (error) {
             console.error("Error generating description:", error);
-            alert("Failed to generate description.");
+            toast.error("Failed to generate description.", {
+                id: "generateDescription",
+            });
         }
     }
     return (
@@ -200,7 +209,7 @@ const ProductManagement = ({
                             placeholder={"Enter Product Description"}
                             required
                             resizeable
-                            ai={false}
+                            ai={true}
                             aiAction={aiAction}
                             loading={isLoading}
                         />
