@@ -1,25 +1,17 @@
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog.tsx";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table.tsx";
-import { TOrder } from "@/types/order.types.ts";
+import {TOrderGetApiResponse} from "@/types/order.types.ts";
 import { Badge } from "@/components/ui/badge.tsx";
+import moment from "moment/moment";
 
 interface OrderDetailsProps {
-    order: TOrder;
+    order: TOrderGetApiResponse;
     isOpen: boolean;
     onClose: () => void;
 }
 
 const OrderDetails: React.FC<OrderDetailsProps> = ({ order, isOpen, onClose }) => {
-    const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleString('en-US', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-        });
-    };
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
@@ -34,8 +26,8 @@ const OrderDetails: React.FC<OrderDetailsProps> = ({ order, isOpen, onClose }) =
                             <p><strong>Total Price:</strong> ${order.totalPrice.toFixed(2)}</p>
                         </div>
                         <div>
-                            <p><strong>Created At:</strong> {formatDate(order.createdAt)}</p>
-                            <p><strong>Updated At:</strong> {formatDate(order.updatedAt)}</p>
+                            <p><strong>Created At:</strong>  {moment(order?.createdAt).format('MMMM Do YYYY')}</p>
+                            <p><strong>Updated At:</strong> {moment(order.updatedAt).format('MMMM Do YYYY')}</p>
                         </div>
                     </div>
                     <div>

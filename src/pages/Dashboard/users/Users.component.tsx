@@ -11,7 +11,6 @@ import {Button} from "@/components/ui/button.tsx";
 import {DownloadCloudIcon} from "lucide-react";
 import exportToExcel from "@/utils/exportToExcel.ts";
 import {cn} from "@/lib/utils.ts";
-import {TUser} from "@/redux/features/auth/auth.slice.ts";
 import { TUserGetApiResponse } from '@/types/user.types.ts';
 
 export default function UsersPage() {
@@ -68,7 +67,7 @@ export default function UsersPage() {
     const handleExport = () => {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const exportData = users?.data.map(({_id, createdAt, updatedAt, __v, ...rest}: TUserGetApiResponse) => rest);
-        exportToExcel<TUser>(exportData, 'Users');
+        exportToExcel(exportData, 'Users');
     };
 
 
