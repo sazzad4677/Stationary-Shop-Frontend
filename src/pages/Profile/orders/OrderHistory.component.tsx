@@ -1,6 +1,6 @@
 import {ScrollArea, ScrollBar} from "@/components/ui/scroll-area.tsx";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs.tsx";
-import { TOrder, TOrderGetApiResponse } from '@/types/order.types.ts';
+import {  TOrderGetApiResponse } from '@/types/order.types.ts';
 import {Badge} from "@/components/ui/badge.tsx";
 import ConfirmationModal from "@/components/features/ConfirmationModal.tsx";
 import {Button} from "@/components/ui/button.tsx";
@@ -15,7 +15,7 @@ import CheckoutDialog from "@/pages/Checkout/CheckoutDialog.tsx";
 const OrderHistoryComponent = () => {
     const [cancelOrder, {isLoading: isCancelLoading}] = useCancelOrderMutation(undefined)
     const {data} = useGetMyOrderQuery(undefined)
-    const [selectedOrder, setSelectedOrder] = useState<TOrder | null>(null)
+    const [selectedOrder, setSelectedOrder] = useState<TOrderGetApiResponse | null>(null)
     const [isOrderDetailsOpen, setIsOrderDetailsOpen] = useState(false)
     const [payNow] = useOrderPayNowMutation(undefined)
     const [orderData, setOrderData] = useState<{
