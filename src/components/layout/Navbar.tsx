@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import {Link, useLocation} from "react-router";
 import {useAppDispatch, useAppSelector} from "@/redux/hooks.ts";
-import {logout, selectUser} from "@/redux/features/auth/auth.slice.ts";
+import {logout, loggedInUser} from "@/redux/features/auth/auth.slice.ts";
 import {useState} from "react";
 import {useLogoutMutation,} from "@/redux/features/auth/auth.api.ts";
 import {Avatar, AvatarFallback} from "@/components/ui/avatar.tsx";
@@ -32,7 +32,7 @@ const Navbar = () => {
     const [isSheetOpen, setIsSheetOpen] = useState(false);
     const location = useLocation()
     const pathname = location.pathname
-    const user = useAppSelector(selectUser)
+    const user = useAppSelector(loggedInUser)
     const cartCount = useAppSelector((state) => state.cart.totalQuantity);
     const [apiLogout] = useLogoutMutation();
     const handleLogout = async () => {
@@ -219,9 +219,6 @@ const Navbar = () => {
                                         onClick={handleSheetClose}>
                                     <Link to="/about">About Us</Link>
                                 </Button>
-                                {/*<div className="flex justify-center mt-4">*/}
-                                {/*    <ModeToggle />*/}
-                                {/*</div>*/}
                             </div>
                         </SheetContent>
                     </Sheet>

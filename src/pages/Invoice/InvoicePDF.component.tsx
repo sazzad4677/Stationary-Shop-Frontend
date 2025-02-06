@@ -1,6 +1,8 @@
 import {format} from "date-fns"
+import {  TOrderGetApiResponse } from '@/types';
+import { Ref } from 'react';
 
-const InvoicePDF = ({order, ref}: { order: any; ref: React.Ref<HTMLDivElement> }) => {
+const InvoicePDF = ({order, ref}: { order: TOrderGetApiResponse; ref: Ref<HTMLDivElement> }) => {
     return (
         <div
             ref={ref}

@@ -7,6 +7,7 @@ const dashboardApi = baseApi.injectEndpoints({
                 url: "/dashboard",
                 method: "GET",
             }),
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             transformResponse: (response: any) => response.data,
             keepUnusedDataFor: 0,
         }),

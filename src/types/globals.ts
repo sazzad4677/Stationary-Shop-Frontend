@@ -1,4 +1,4 @@
-export type queryMetaData = {
+export type TQueryMetaData = {
     page: number,
     limit: number,
     total: number,

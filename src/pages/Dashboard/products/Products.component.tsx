@@ -1,17 +1,17 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import {useState} from "react"
-import {Button} from "@/components/ui/button"
-import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card"
-import {Badge} from "@/components/ui/badge"
-import {Layout} from "@/components/layout/DashboardLayout"
-import {useDeleteProductMutation, useGetProductsQuery} from "@/redux/features/products/products.api"
-import ProductManagement from "@/pages/Dashboard/ProductManagement.component.tsx";
-import Table from "@/components/features/Table.tsx";
-import {TProduct} from "@/pages/Products";
+import { ReactNode, useState } from 'react';
+import {Button} from "@/components/ui/button.tsx"
+import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card.tsx"
+import {Badge} from "@/components/ui/badge.tsx"
+import {Layout} from "@/components/layout/DashboardLayout.tsx"
+import {useDeleteProductMutation, useGetProductsQuery} from "@/redux/features/products/products.api.ts"
+import ProductManagement from "@/pages/Dashboard/products/ProductManagement.component.tsx";
+import Table from '@/components/features/Table.tsx';
 import {DownloadCloudIcon, Edit, Plus} from "lucide-react";
 import exportToExcel from "@/utils/exportToExcel.ts";
 import {handleToastPromise} from "@/utils/handleToastPromise.ts";
 import ConfirmationModal from "@/components/features/ConfirmationModal.tsx";
+import { TProductGetApiResponse } from '@/types';
 
 
 export default function ProductsPage() {
@@ -50,25 +50,25 @@ export default function ProductsPage() {
             label: "Price",
             key: "price",
             sortable: true,
-            render: (value: number) => `$${value.toFixed(2)}`
+            render: (value: number) => `$${value}`
         },
         {
             label: "Quantity",
             key: "quantity",
-            render: (quantity: number, item: TProduct) => (
-                <Badge variant={item.inStock ? "secondary" : "destructive"}>{quantity}</Badge>
+            render: (quantity: number, item: TProductGetApiResponse) => (
+                <Badge variant={item.inStock ? "secondary" : "destructive"}>{quantity as ReactNode}</Badge>
             )
         }
     ];
     const handleExport = () => {
-        const exportData: Partial<TProduct>[] = productData?.data?.map(({
+        const exportData = productData?.data?.map(({
                                                                             _id,
                                                                             createdAt,
                                                                             updatedAt,
                                                                             __v,
                                                                             ...rest
-                                                                        }: TProduct) => rest) || [];
-        exportToExcel<Partial<TProduct>>(exportData, 'Products');
+                                                                        }: TProductGetApiResponse) => rest) || [];
+        exportToExcel<Partial<TProductGetApiResponse>>(exportData, 'Products');
     };
     return (
         <Layout>
@@ -92,7 +92,7 @@ export default function ProductsPage() {
                     />}
                 </CardHeader>
                 <CardContent>
-                    <Table<TProduct>
+                    <Table<TProductGetApiResponse>
                         data={productData?.data || []}
                         columns={columns}
                         allowPagination

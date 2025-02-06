@@ -1,11 +1,12 @@
 import { Card, CardContent } from "@/components/ui/card"
 import {Link} from "react-router";
+import { BookIcon, CalendarIcon, LampDeskIcon, PenIcon } from 'lucide-react';
 
 const categories = [
-    { name: "Notebooks", icon: "📓" },
-    { name: "Pens", icon: "🖋️" },
-    { name: "Desk Accessories", icon: "🗃️" },
-    { name: "Planners", icon: "📅" },
+    { name: "Notebooks", icon: <BookIcon/> },
+    { name: "Pens", icon: <PenIcon/> },
+    { name: "Desk Accessories", icon: <LampDeskIcon/> },
+    { name: "Planners", icon: <CalendarIcon/> },
 ]
 
 const ProductCategories = () => {
@@ -18,7 +19,7 @@ const ProductCategories = () => {
                         <Link key={category.name} to={`/products?category=${category.name.toLowerCase()}`}>
                             <Card className="transition-all hover:shadow-md">
                                 <CardContent className="p-6 text-center">
-                                    <span className="text-4xl mb-4 block">{category.icon}</span>
+                                    <div className="text-4xl mb-4 block flex justify-center">{category.icon}</div>
                                     <h3 className="text-xl font-semibold">{category.name}</h3>
                                 </CardContent>
                             </Card>

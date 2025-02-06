@@ -12,24 +12,6 @@ import {DynamicPagination} from "@/components/features/DynamicPagination.tsx";
 import {productCategories} from "@/constants/global.ts";
 import {useSearchParams} from "react-router";
 
-export interface TProduct {
-    _id: string
-    name: string
-    brand: string
-    price: number
-    category: string
-    description: string
-    quantity: number
-    inStock: boolean
-    updatedAt: string
-    createdAt: string,
-    images: [
-        file: File,
-        preview: string,
-    ]
-    __v: number
-}
-
 const initialValues: TFilter = {
     searchTerm: "",
     priceRange: [0, 0],
@@ -98,7 +80,7 @@ export default function AllProductsPage() {
         }));
     }, [debounce, queryValue]);
     return (
-        <div className="container mx-auto py-4  min-h-screen px-16">
+        <div className="container mx-auto py-4  min-h-screen px-4 md:px-16">
             <GenericForm ref={formRef}
                          schema={filterSchema}
                          initialValues={initialValues}
@@ -186,7 +168,7 @@ export default function AllProductsPage() {
                             transition={{duration: 0.3}}
                         >
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                                {productData?.data?.map((product: TProduct) => (
+                                {productData?.data?.map((product) => (
                                     <motion.div
                                         key={product._id}
                                         initial={{opacity: 0, scale: 0.9}}

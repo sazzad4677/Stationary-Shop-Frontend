@@ -13,7 +13,7 @@ import {
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu.tsx";
 import {useAppDispatch, useAppSelector} from "@/redux/hooks.ts";
-import {logout, selectUser} from "@/redux/features/auth/auth.slice.ts";
+import {logout, loggedInUser} from "@/redux/features/auth/auth.slice.ts";
 import {useLogoutMutation} from "@/redux/features/auth/auth.api.ts";
 import {Avatar, AvatarFallback} from "@/components/ui/avatar.tsx";
 
@@ -24,7 +24,7 @@ interface LayoutProps {
 export function Layout({children}: LayoutProps) {
     const dispatch = useAppDispatch()
     const pathname = useLocation().pathname
-    const user = useAppSelector(selectUser)
+    const user = useAppSelector(loggedInUser)
     const [apiLogout] = useLogoutMutation();
     const handleLogout = async () => {
         await apiLogout(undefined)

@@ -2,7 +2,7 @@ import {Card} from "@/components/ui/card"
 import {ChevronRight} from "lucide-react";
 import PersonalInfoCardComponent from "@/pages/Profile/PersonalInfoCard.component.tsx";
 import ShippingAddressComponent from "@/pages/Profile/ShippingAddress.component.tsx";
-import OrderHistoryComponent from "@/pages/Profile/OrderHistory.component.tsx";
+import OrderHistoryComponent from "@/pages/Profile/orders/OrderHistory.component.tsx";
 
 const ProfilePage = () => {
     return (

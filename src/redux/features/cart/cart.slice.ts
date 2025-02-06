@@ -1,12 +1,12 @@
 import {createSlice, PayloadAction} from "@reduxjs/toolkit";
-import {TProduct} from "@/pages/Products";
+import { TProductGetApiResponse } from '@/types';
 
-interface CartItem extends TProduct {
+type CartItem=  TProductGetApiResponse  & {
     quantity: number;
 }
 
-interface CartState {
-    items: CartItem[];
+type CartState = {
+    items: CartItem[]
     totalQuantity: number;
     totalPrice: number;
 }
@@ -23,7 +23,7 @@ const cartSlice = createSlice({
     reducers: {
         addItem(state, action: PayloadAction<CartItem>) {
             const existingItem = state.items.find(
-                (item) => item._id === action.payload._id
+              (item) => item._id === action.payload._id
             );
 
             if (existingItem) {
@@ -33,35 +33,42 @@ const cartSlice = createSlice({
             }
 
             state.totalQuantity += action.payload.quantity;
-            state.totalPrice += action.payload.price * action.payload.quantity;
+            state.totalPrice = Math.max(
+              0,
+              state.totalPrice + action.payload.price * action.payload.quantity
+            );
         },
+
         removeItem(state, action: PayloadAction<string>) {
             const itemIndex = state.items.findIndex(
-                (item) => item._id === action.payload
+              (item) => item._id === action.payload
             );
             if (itemIndex !== -1) {
                 const item = state.items[itemIndex];
                 state.totalQuantity -= item.quantity;
-                state.totalPrice -= item.price * item.quantity;
+                state.totalPrice = Math.max(
+                  0,
+                  state.totalPrice - item.price * item.quantity
+                );
                 state.items.splice(itemIndex, 1);
-
             }
         },
         updateQuantity(
-            state,
-            action: PayloadAction<{ _id: string; quantity: number }>
+          state,
+          action: PayloadAction<{ _id: string; quantity: number }>
         ) {
             const {_id, quantity} = action.payload;
             const existingItem = state.items.find((item) => item._id === _id);
             if (existingItem) {
-                if (quantity === 0) return
+                if (quantity === 0) return;
                 const quantityDifference = quantity - existingItem.quantity;
                 state.totalQuantity += quantityDifference;
-                state.totalPrice += quantityDifference * existingItem.price;
+                state.totalPrice = Math.max(
+                  0,
+                  state.totalPrice + quantityDifference * existingItem.price
+                );
                 existingItem.quantity = quantity;
-
             }
-
         },
         resetCart(state) {
             state.items = [];

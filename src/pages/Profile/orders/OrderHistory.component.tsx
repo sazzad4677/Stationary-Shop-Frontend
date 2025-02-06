@@ -1,6 +1,6 @@
 import {ScrollArea, ScrollBar} from "@/components/ui/scroll-area.tsx";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs.tsx";
-import {TOrder} from "@/types/order.types.ts";
+import { TOrder, TOrderGetApiResponse } from '@/types/order.types.ts';
 import {Badge} from "@/components/ui/badge.tsx";
 import ConfirmationModal from "@/components/features/ConfirmationModal.tsx";
 import {Button} from "@/components/ui/button.tsx";
@@ -8,7 +8,7 @@ import {handleToastPromise} from "@/utils/handleToastPromise.ts";
 import toast from "react-hot-toast";
 import {useCancelOrderMutation, useGetMyOrderQuery, useOrderPayNowMutation} from "@/redux/features/order/order.api.ts";
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card.tsx";
-import OrderDetails from "@/pages/Profile/OrderDetails.component.tsx";
+import OrderDetails from "@/pages/Profile/orders/OrderDetails.component.tsx";
 import {useState} from "react";
 import CheckoutDialog from "@/pages/Checkout/CheckoutDialog.tsx";
 
@@ -18,7 +18,13 @@ const OrderHistoryComponent = () => {
     const [selectedOrder, setSelectedOrder] = useState<TOrder | null>(null)
     const [isOrderDetailsOpen, setIsOrderDetailsOpen] = useState(false)
     const [payNow] = useOrderPayNowMutation(undefined)
-    const [clientSecret, setClientSecret] = useState<string>("")
+    const [orderData, setOrderData] = useState<{
+        clientSecret: string,
+        order: {
+            id: string,
+            orderId: string
+        }
+    } | null>(null)
     const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false)
     const handleCancelOrder = async (orderId: string) => {
         await handleToastPromise(
@@ -37,10 +43,16 @@ const OrderHistoryComponent = () => {
 
     const orderStatus = ["All", "Pending", "Paid", "Processing", "Shipped", "Delivered", "Refunded"]
 
-    const handlePayNow = async (orderId: string) => {
-        const {data} = await payNow(orderId).unwrap();
+    const handlePayNow = async (_id: string, orderId: string) => {
+        const {data} = await payNow(_id).unwrap();
         if (!data?.clientSecret) return toast.error("An error occurred during placing the order. Please try again later.");
-        setClientSecret(data?.clientSecret)
+        setOrderData({
+            ...data,
+            order: {
+                id: _id,
+                orderId
+            }
+        })
         setIsPaymentDialogOpen(true)
     }
 
@@ -74,8 +86,8 @@ const OrderHistoryComponent = () => {
                                 <TabsContent key={tab} value={tab} className="p-4 ">
                                     <div className="space-y-4">
                                         {data
-                                            ?.filter((order: TOrder) => tab === orderStatus[0] || order.status === tab)
-                                            .map((order: TOrder) => (
+                                            ?.filter((order: TOrderGetApiResponse) => tab === orderStatus[0] || order.status === tab)
+                                            .map((order: TOrderGetApiResponse) => (
                                                 <div
                                                     key={order._id}
                                                     className="flex items-center justify-between p-4 border rounded-lg cursor-pointer hover:bg-gray-100"
@@ -123,7 +135,7 @@ const OrderHistoryComponent = () => {
                                                                         type="button"
                                                                         onClick={async (e) => {
                                                                             e.stopPropagation()
-                                                                            await handlePayNow(order._id)
+                                                                            await handlePayNow(order._id, order.orderId)
                                                                         }}
                                                                     >
                                                                         Pay Now
@@ -147,7 +159,7 @@ const OrderHistoryComponent = () => {
                               onClose={() => setIsOrderDetailsOpen(false)}/>
             )}
             <CheckoutDialog isOpen={isPaymentDialogOpen} setIsOpen={setIsPaymentDialogOpen}
-                            clientSecret={clientSecret}/>
+                            orderData={orderData}/>
         </>
 
     );

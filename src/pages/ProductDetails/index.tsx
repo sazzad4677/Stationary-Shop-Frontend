@@ -1,4 +1,4 @@
-import {useState} from "react"
+import { useEffect, useState } from 'react';
 import {Star, Truck, ArrowRight, Heart, Share2, Package} from "lucide-react"
 import {Button} from "@/components/ui/button"
 import {Card, CardContent} from "@/components/ui/card"
@@ -9,7 +9,8 @@ import {Separator} from "@/components/ui/separator"
 import {addItem} from "@/redux/features/cart/cart.slice.ts";
 import {useAppDispatch} from "@/redux/hooks.ts";
 import {useGetSingleProductQuery} from "@/redux/features/products/products.api.ts";
-import {useParams} from "react-router";
+import {  useParams } from 'react-router';
+import moment from 'moment';
 
 export default function ProductDetailsPage() {
     const dispatch = useAppDispatch();
@@ -17,42 +18,55 @@ export default function ProductDetailsPage() {
     const {data} = useGetSingleProductQuery(params.id);
     const [quantity, setQuantity] = useState(1)
     const [isFavorite, setIsFavorite] = useState(false)
-    const [mainImage, setMainImage] = useState("/no-image.svg")
-    const thumbnails = ["/no-image.svg", "/no-image.svg", "/no-image.svg", "/no-image.svg"]
+    const [mainImage, setMainImage] = useState(data?.images?.[0] || "/no-image.svg")
     const handleAddToCart = () => {
         dispatch(addItem({
             ...data!,
             quantity,
         }))
     };
-    const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString("en-US", {
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-        })
-    }
+
+    useEffect(() => {
+        if (data?.images?.length) {
+            setMainImage(data?.images[0])
+        }
+    }, [data?.images])
+
     return (
         <div className="container mx-auto px-4 py-8">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
                 <div className="space-y-4">
-                    <div className="relative flex justify-center aspect-square overflow-hidden rounded-lg">
+                    {/* Main Product Image */}
+                    <div className="relative aspect-square flex justify-center items-center overflow-hidden rounded-lg border shadow-sm">
                         <img
-                            src={mainImage || "/no-image.svg"}
-                            alt="Product image"
-                            className="w-1/2 h-full  object-cover hover:scale-105 transition-transform duration-300"
+                          src={mainImage || "/no-image.svg"}
+                          alt="Product image"
+                          className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                          style={{
+                              aspectRatio: "16 / 9",
+                          }}
                         />
                     </div>
+
+                    {/* Product Thumbnails */}
                     <div className="grid grid-cols-4 gap-4">
-                        {thumbnails.map((thumb, i) => (
-                            <div key={i} className="aspect-square overflow-hidden rounded-md">
-                                <img
-                                    src={thumb || "/placeholder.svg"}
-                                    alt={`Product thumbnail ${i + 1}`}
-                                    className="w-full h-full object-cover hover:opacity-75 transition-opacity duration-300 cursor-pointer"
-                                    onClick={() => setMainImage(thumb)}
-                                />
-                            </div>
+                        {data?.images?.map((thumb, i) => (
+                          <button
+                            key={i}
+                            className={`aspect-square overflow-hidden rounded-md border ${
+                              thumb === mainImage ? "ring-2 ring-primary-foreground" : ""
+                            }`}
+                            onClick={() => setMainImage(thumb)}
+                          >
+                              <img
+                                src={thumb || "/placeholder.svg"}
+                                alt={`Thumbnail ${i + 1}`}
+                                className="w-full h-full object-cover transition-opacity duration-200 hover:opacity-80"
+                                style={{
+                                    aspectRatio: "16 / 9",
+                                }}
+                              />
+                          </button>
                         ))}
                     </div>
                 </div>
@@ -133,7 +147,7 @@ export default function ProductDetailsPage() {
 
                     <Separator/>
 
-                    <div className="text-sm text-muted-foreground">Last updated: {formatDate(data?.updatedAt as string)}</div>
+                    <div className="text-sm text-muted-foreground">Last updated: {moment(data?.updatedAt).format('MMMM Do YYYY, h:mm:ss a')}</div>
                 </div>
             </div>
 
@@ -147,24 +161,7 @@ export default function ProductDetailsPage() {
                     <Card>
                         <CardContent className="prose max-w-none p-6">
                             <p>
-                                Our Premium Cotton T-Shirt is the perfect blend of comfort and style. Made from 100%
-                                organic cotton,
-                                this shirt is soft to the touch and breathable, making it ideal for all-day wear.
-                                The
-                                classic cut
-                                ensures a flattering fit for all body types, while the reinforced seams add
-                                durability
-                                to this wardrobe
-                                staple.
-                            </p>
-                            <p>
-                                Available in a range of colors, this versatile t-shirt can be dressed up or down,
-                                making
-                                it suitable for
-                                any occasion. Whether you're heading to the gym, running errands, or meeting friends
-                                for
-                                a casual
-                                dinner, our Premium Cotton T-Shirt has got you covered.
+                                {data?.description}
                             </p>
                         </CardContent>
                     </Card>

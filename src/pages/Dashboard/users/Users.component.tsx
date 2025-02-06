@@ -1,8 +1,8 @@
 import Table from "@/components/features/Table.tsx";
-import {Switch} from "@/components/ui/switch"
-import {Badge} from "@/components/ui/badge"
-import {Avatar, AvatarFallback} from "@/components/ui/avatar"
-import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card"
+import {Switch} from "@/components/ui/switch.tsx"
+import {Badge} from "@/components/ui/badge.tsx"
+import {Avatar, AvatarFallback} from "@/components/ui/avatar.tsx"
+import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card.tsx"
 import {Layout} from "@/components/layout/DashboardLayout.tsx";
 import {useBlockUserMutation, useGetAllUsersQuery} from "@/redux/features/admin/users/users.api.ts";
 import {handleToastPromise} from "@/utils/handleToastPromise.ts";
@@ -12,26 +12,7 @@ import {DownloadCloudIcon} from "lucide-react";
 import exportToExcel from "@/utils/exportToExcel.ts";
 import {cn} from "@/lib/utils.ts";
 import {TUser} from "@/redux/features/auth/auth.slice.ts";
-
-export interface IUser {
-    _id: string;
-    name: string;
-    email: string;
-    password: string;
-    role: 'admin' | 'user';
-    isBlocked: boolean;
-    shippingAddress: {
-        address1: string;
-        address2: string;
-        city: string;
-        state: string;
-        country: string;
-        zipCode: string;
-    },
-    createdAt: string;
-    updatedAt: string;
-    __v: number;
-}
+import { TUserGetApiResponse } from '@/types/user.types.ts';
 
 export default function UsersPage() {
     const [blockUser, {isLoading}] = useBlockUserMutation(undefined)
@@ -86,7 +67,7 @@ export default function UsersPage() {
 
     const handleExport = () => {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const exportData = users?.data.map(({_id, createdAt, updatedAt, __v, ...rest}: IUser) => rest);
+        const exportData = users?.data.map(({_id, createdAt, updatedAt, __v, ...rest}: TUserGetApiResponse) => rest);
         exportToExcel<TUser>(exportData, 'Users');
     };
 
@@ -103,7 +84,7 @@ export default function UsersPage() {
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <Table<IUser>
+                    <Table<TUserGetApiResponse>
                         data={users?.data || []}
                         columns={columns}
                         allowPagination

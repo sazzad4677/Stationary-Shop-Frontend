@@ -22,12 +22,12 @@ const ShippingDetails = ({isEditing, setIsEditing}: {
     const initialValues = {
         email: myData?.email || "",
         fullName: myData?.name || "",
-        addressLine1: myData?.shippingAddress.address1 || "",
-        addressLine2: myData?.shippingAddress.address2 || "",
-        city: myData?.shippingAddress.city || "",
-        state: myData?.shippingAddress.state || "",
-        zipCode: myData?.shippingAddress.zipCode || "",
-        country: myData?.shippingAddress.country || "",
+        addressLine1: myData?.shippingAddress?.address1 || "",
+        addressLine2: myData?.shippingAddress?.address2 || "",
+        city: myData?.shippingAddress?.city || "",
+        state: myData?.shippingAddress?.state || "",
+        zipCode: myData?.shippingAddress?.zipCode || "",
+        country: myData?.shippingAddress?.country || "",
     }
 
     const onSubmit = async (values: TShippingDetails) => {

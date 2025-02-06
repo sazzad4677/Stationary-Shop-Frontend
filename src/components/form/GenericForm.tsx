@@ -24,6 +24,7 @@ import SearchField from "@/components/form/fields/SearchField.tsx";
 import CheckBoxField from "@/components/form/fields/CheckBoxField.tsx";
 import TextAreaField from "@/components/form/fields/TextAreaField.tsx";
 import SwitchField from "@/components/form/fields/SwitchField.tsx";
+import AutoResizeTextArea from '@/components/form/fields/AutoResizeTextArea.tsx';
 
 // eslint-disable-next-line
 export type TGenericFormRef<TFormValues extends FieldValues = any> = {
@@ -89,3 +90,4 @@ GenericForm.SearchField = SearchField
 GenericForm.Checkbox = CheckBoxField
 GenericForm.Switch = SwitchField
 GenericForm.Image = ImageField
+GenericForm.AutoResizeTextArea = AutoResizeTextArea

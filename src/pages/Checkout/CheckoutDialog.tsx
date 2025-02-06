@@ -8,10 +8,16 @@ import toast from "react-hot-toast";
 import {resetCart} from "@/redux/features/cart/cart.slice.ts";
 import {useNavigate} from "react-router";
 
-
-
-const CheckoutForm = ({clientSecret, setIsOpen}: {
+type TOrderData = {
     clientSecret: string,
+    order: {
+        id: string,
+        orderId: string
+    }
+} | null;
+
+const CheckoutForm = ({orderData, setIsOpen}: {
+    orderData:  TOrderData,
     setIsOpen: Dispatch<SetStateAction<boolean>>
 }) => {
     const stripe = useStripe();
@@ -37,9 +43,9 @@ const CheckoutForm = ({clientSecret, setIsOpen}: {
 
         const stripeData = await stripe.confirmPayment({
             elements,
-            clientSecret,
+            clientSecret: orderData?.clientSecret || "",
             confirmParams: {
-                return_url: `http://localhost:5173/order-placed`,
+                return_url: `${window.location.origin}/order-placed`,
             },
             redirect: "if_required",
         })
@@ -47,11 +53,12 @@ const CheckoutForm = ({clientSecret, setIsOpen}: {
             toast.error(`Payment failed: ${stripeData.error.message}`);
             setIsLoading(false);
         } else {
+            // console.log(stripeData);
             toast.success("Payment successful!");
             setIsLoading(false);
             setIsOpen(false);
             dispatch(resetCart());
-            navigate("/order-placed");
+            navigate("/order-placed", { state: { orderId: orderData?.order?.orderId, id: orderData?.order?.id } });
         }
     };
 
@@ -60,22 +67,22 @@ const CheckoutForm = ({clientSecret, setIsOpen}: {
             <div className="my-4 border p-4 rounded">
                 <PaymentElement/>
             </div>
-            <div className={"flex justify-between"}>
-                <Button type="submit" disabled={!stripe || isLoading}>
-                    {isLoading ? "Processing..." : "Pay Now"}
-                </Button>
+            <div className={"flex gap-x-4 justify-end"}>
                 <Button type={"button"} variant="secondary" onClick={() => setIsOpen(false)}>
                     Cancel
+                </Button>
+                <Button type="submit" disabled={!stripe || isLoading}>
+                    {isLoading ? "Processing..." : "Pay Now"}
                 </Button>
             </div>
         </form>
     );
 };
 
-const CheckoutDialog = ({isOpen, setIsOpen, clientSecret}: {
+const CheckoutDialog = ({isOpen, setIsOpen, orderData}: {
     isOpen: boolean,
     setIsOpen: Dispatch<SetStateAction<boolean>>,
-    clientSecret: string
+    orderData: TOrderData
 }) => {
     const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY as string);
     return (
@@ -85,7 +92,7 @@ const CheckoutDialog = ({isOpen, setIsOpen, clientSecret}: {
                     <DialogTitle>Complete Your Payment</DialogTitle>
                 </DialogHeader>
                 {stripePromise && <Elements stripe={stripePromise} options={{
-                    clientSecret,
+                    clientSecret: orderData?.clientSecret,
                     appearance: {
                         theme: "flat",
                         variables: {
@@ -93,7 +100,7 @@ const CheckoutDialog = ({isOpen, setIsOpen, clientSecret}: {
                         },
                     }
                 }}>
-                    <CheckoutForm clientSecret={clientSecret} setIsOpen={setIsOpen}/>
+                    <CheckoutForm orderData={orderData} setIsOpen={setIsOpen}/>
                 </Elements>}
             </DialogContent>
         </Dialog>

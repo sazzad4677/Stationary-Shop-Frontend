@@ -7,6 +7,7 @@ export interface TUserProfile {
     isBlocked: boolean
     createdAt: string
     updatedAt: string
+    isShippingAddressAdded: boolean
 }
 
 export interface ShippingAddress {

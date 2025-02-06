@@ -1,5 +1,5 @@
 import {baseApi} from "@/redux/api/baseApi.ts";
-import {queryMetaData} from "@/types/globals.ts";
+import {TQueryMetaData} from "@/types/globals.ts";
 import {TUserProfile} from "@/redux/features/profile/profile.type.ts";
 import {Tags} from "@/constants/global.ts";
 
@@ -12,7 +12,7 @@ const profileApi = baseApi.injectEndpoints({
                     method: "GET"
                 }
             },
-            transformResponse: (response: { data: TUserProfile, meta: queryMetaData }) => {
+            transformResponse: (response: { data: TUserProfile, meta: TQueryMetaData }) => {
                 return response.data;
             },
             providesTags: [Tags.UpdateProfile],

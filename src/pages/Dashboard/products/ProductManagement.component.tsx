@@ -7,10 +7,9 @@ import {
     DialogTrigger
 } from "@/components/ui/dialog.tsx";
 import {Button} from "@/components/ui/button.tsx";
-import {Plus, Sparkles} from "lucide-react";
+import {Plus} from "lucide-react";
 import {GenericForm, TGenericFormRef} from "@/components/form/GenericForm.tsx";
-import {productSchema} from "@/pages/Dashboard/Products.schema.ts"
-import type {z} from "zod";
+import {productSchema} from "@/pages/Dashboard/products/products.schema.ts"
 import {
     useGetSingleProductQuery,
 } from "@/redux/features/products/products.api.ts";
@@ -23,29 +22,7 @@ import {
     useUpdateProductMutation
 } from "@/redux/features/admin/products/products.api.ts";
 import MultiImageField from "@/components/form/fields/MultipleImageField.tsx";
-import Editor from "@/components/form/rich-text/editor.tsx";
-import {Controller} from "react-hook-form";
-import {Label} from "@/components/ui/label.tsx";
-
-type TProductManageProps = {
-    isDialogOpen: boolean;
-    setIsDialogOpen: (value: boolean) => void;
-    editingProduct: boolean | string;
-    setEditingProduct: (value: boolean | string) => void;
-}
-
-type TProduct = z.infer<typeof productSchema>
-
-const initialValues: TProduct = {
-    name: "",
-    brand: "",
-    price: 0,
-    category: "",
-    description: "",
-    quantity: 0,
-    inStock: true,
-    images: [],
-}
+import { TProductManageProps, TProductSchema } from '@/pages/Dashboard/products/products.type.ts';
 
 const ProductManagement = ({
                                isDialogOpen,
@@ -53,13 +30,13 @@ const ProductManagement = ({
                                setEditingProduct,
                                setIsDialogOpen,
                            }: TProductManageProps) => {
-    const formRef = useRef<TGenericFormRef<TProduct>>(null)
+    const formRef = useRef<TGenericFormRef<TProductSchema>>(null)
 
     const [generateDescription, {isLoading}] = useGenerateDescriptionMutation();
     const [addProduct, {isLoading: isAddProductLoading,}] = useCreateProductMutation(undefined)
     const [updateProduct, {isLoading: isUpdateProductLoading}] = useUpdateProductMutation(undefined);
     const {data} = useGetSingleProductQuery(editingProduct, {skip: !editingProduct,});
-    const updatedData = {
+    const initialValues = {
         name: data?.name || '',
         brand: data?.brand || '',
         price: data?.price || 0,
@@ -76,7 +53,7 @@ const ProductManagement = ({
         label: item,
         value: item,
     }))
-    const handleAddProduct = async (newProduct: TProduct) => {
+    const handleAddProduct = async (newProduct: TProductSchema) => {
         const formValues = {...newProduct};
         const formData = new FormData();
         formValues?.images?.forEach((image) => {
@@ -108,7 +85,7 @@ const ProductManagement = ({
 
     }
 
-    const handleUpdateProduct = async (updatedProduct: TProduct) => {
+    const handleUpdateProduct = async (updatedProduct: TProductSchema) => {
         const formValues = {...updatedProduct};
         const formData = new FormData();
         formValues?.images?.forEach((image) => {
@@ -146,7 +123,7 @@ const ProductManagement = ({
         }
     }
 
-    const onSubmit = async (values: TProduct) => {
+    const onSubmit = async (values: TProductSchema) => {
         if (editingProduct) {
             await handleUpdateProduct(values)
         } else {
@@ -188,61 +165,61 @@ const ProductManagement = ({
                 </DialogHeader>
                 <DialogDescription/>
                 <GenericForm ref={formRef} onSubmit={onSubmit} initialValues={initialValues} schema={productSchema}
-                             values={updatedData}>
+                             values={initialValues}>
                     <div className="space-y-2 mb-2">
                         <div className={"grid grid-cols-1 md:grid-cols-2 gap-x-2"}>
-                            <GenericForm.Text<TProduct> label="Name"
+                            <GenericForm.Text<TProductSchema> label="Name"
                                                         name="name"
                                                         placeholder="Product Name"
                                                         required/>
-                            <GenericForm.Text<TProduct> label="Brand" name="brand" placeholder="Product Brand"
+                            <GenericForm.Text<TProductSchema> label="Brand" name="brand" placeholder="Product Brand"
                                                         required/>
                         </div>
-                        <GenericForm.Select<TProduct> name="category" label="Category" options={categoryOptions}
+                        <GenericForm.Select<TProductSchema> name="category" label="Category" options={categoryOptions}
                                                       required/>
                         <div className={"grid grid-cols-1 md:grid-cols-2 gap-4"}>
-                            <GenericForm.Text<TProduct> label="Price" name="price" placeholder="Product Price"
+                            <GenericForm.Text<TProductSchema> label="Price" name="price" placeholder="Product Price"
                                                         required/>
-                            <GenericForm.Text<TProduct> name="quantity" label="Quantity" required
+                            <GenericForm.Text<TProductSchema> name="quantity" label="Quantity" required
                                                         placeholder="Product Quantity"/>
                         </div>
-                        {/*<GenericForm.AutoResizeTextEditor<TProduct>*/}
-                        {/*    name="description"*/}
-                        {/*    label="Description"*/}
-                        {/*    placeholder={"Enter Product Description"}*/}
-                        {/*    required*/}
-                        {/*    resizeable*/}
-                        {/*    ai={true}*/}
-                        {/*    aiAction={aiAction}*/}
-                        {/*    loading={isLoading}*/}
-                        {/*/>*/}
-                        <Controller
+                        <GenericForm.AutoResizeTextArea<TProductSchema>
                             name="description"
-                            render={({field}) => (
-                                <div className={"grid gap-2"}>
-                                    <div className={"flex justify-between items-center"}>
-                                        <p><Label>Description<span className={"text-destructive"}>*</span></Label></p>
-                                        <div>
-                                            <Button
-                                                type={"button"}
-                                                onClick={aiAction}
-                                                disabled={isLoading}
-                                                variant={"ghost"}
-                                            >
-                                                <Sparkles className={"text-primary-foreground"}/> Generate
-                                                With AI
-                                            </Button>
-                                        </div>
-                                    </div>
-                                    <Editor
-                                        value={field.value ?? ""}
-                                        placeholder="Start typing content..."
-                                        onChange={field.onChange}
-                                    />
-                                </div>
-                            )}
+                            label="Description"
+                            placeholder={"Enter Product Description"}
+                            required
+                            resizeable
+                            ai={true}
+                            aiAction={aiAction}
+                            loading={isLoading}
                         />
-                        {<MultiImageField<TProduct>
+                        {/*<Controller*/}
+                        {/*    name="description"*/}
+                        {/*    render={({field}) => (*/}
+                        {/*        <div className={"grid gap-2"}>*/}
+                        {/*            <div className={"flex justify-between items-center"}>*/}
+                        {/*                <p><Label>Description<span className={"text-destructive"}>*</span></Label></p>*/}
+                        {/*                <div>*/}
+                        {/*                    <Button*/}
+                        {/*                        type={"button"}*/}
+                        {/*                        onClick={aiAction}*/}
+                        {/*                        disabled={isLoading}*/}
+                        {/*                        variant={"ghost"}*/}
+                        {/*                    >*/}
+                        {/*                        <Sparkles className={"text-primary-foreground"}/> Generate*/}
+                        {/*                        With AI*/}
+                        {/*                    </Button>*/}
+                        {/*                </div>*/}
+                        {/*            </div>*/}
+                        {/*            <Editor*/}
+                        {/*                value={field.value ?? ""}*/}
+                        {/*                placeholder="Start typing content..."*/}
+                        {/*                onChange={field.onChange}*/}
+                        {/*            />*/}
+                        {/*        </div>*/}
+                        {/*    )}*/}
+                        {/*/>*/}
+                        {<MultiImageField<TProductSchema>
                             name="images"
                             label="Product Images"
                             required

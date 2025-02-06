@@ -1,7 +1,7 @@
 import {baseApi} from "@/redux/api/baseApi.ts";
-import {TProduct} from "@/pages/Products";
-import {queryMetaData} from "@/types/globals.ts";
+import {TQueryMetaData} from "@/types/globals.ts";
 import {Tags} from "@/constants/global.ts";
+import { TProductGetApiResponse } from '@/types';
 
 const productApi = baseApi.injectEndpoints({
     endpoints: (builder) => ({
@@ -14,9 +14,9 @@ const productApi = baseApi.injectEndpoints({
                     params: params,
                 }
             },
-            transformResponse: (response: { data: TProduct[], meta: queryMetaData }) => {
+            transformResponse: (response: { data: TProductGetApiResponse[], meta: TQueryMetaData }) => {
                 return {
-                    data: response.data,
+                    data: response.data as TProductGetApiResponse[],
                     meta: response.meta,
                 };
             },
@@ -30,8 +30,8 @@ const productApi = baseApi.injectEndpoints({
                     method: "GET",
                 }
             },
-            transformResponse: (response: { data: TProduct }) => {
-                return response.data;
+            transformResponse: (response: { data: TProductGetApiResponse }) => {
+                return response.data as TProductGetApiResponse;
             },
             keepUnusedDataFor: 0,
         }),

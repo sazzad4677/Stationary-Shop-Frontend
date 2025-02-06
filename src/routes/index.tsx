@@ -13,9 +13,9 @@ import NotFound from "@/pages/NotFound";
 import ProfilePage from "@/pages/Profile";
 import ProtectedRoute from "@/routes/ProtectedRoute.tsx";
 import Dashboard from "@/pages/Dashboard";
-import UsersPage from "@/pages/Dashboard/Users.component.tsx";
-import ProductsPage from "@/pages/Dashboard/Products.component.tsx";
-import OrdersPage from "@/pages/Dashboard/Orders.components.tsx";
+import UsersPage from "@/pages/Dashboard/users/Users.component.tsx";
+import ProductsPage from "@/pages/Dashboard/products/Products.component.tsx";
+import OrdersPage from "@/pages/Dashboard/orders/Orders.components.tsx";
 import CheckoutPage from "@/pages/Checkout";
 
 const router = createBrowserRouter([
