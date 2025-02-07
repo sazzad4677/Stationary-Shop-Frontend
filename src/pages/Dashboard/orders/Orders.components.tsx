@@ -172,24 +172,28 @@ export default function OrdersPage() {
     <Layout>
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between space-x-2">
+          <div className="flex items-center justify-between space-x-10">
             <div>
               <Button onClick={handleExport}>
                 <DownloadCloudIcon className="mr-2 h-4 w-4" />
                 Export
               </Button>
             </div>
-            <div className="flex space-x-2">
+            <div className="flex flex-wrap  gap-2 md:space-x-2">
               {Object.entries(statusColors).map(([status, color]) => (
-                <Badge key={status} variant="outline" className={color}
-                  // onClick={() => {
-                  //     setQuery((prev) => {
-                  //         return {...prev, "filter[status]": status}
-                  //     })
-                  // }}
-                >
-                  {status}
-                </Badge>
+                  <Badge
+                      key={status}
+                      variant="outline"
+                      className={color}
+                      // Uncomment the `onClick` below if filtering by status is added in the future
+                      // onClick={() => {
+                      //   setQuery((prev) => {
+                      //     return { ...prev, "filter[status]": status };
+                      //   });
+                      // }}
+                  >
+                    {status}
+                  </Badge>
               ))}
             </div>
           </div>
