@@ -7,12 +7,14 @@ const MainLayout = () => {
     const pathname = useLocation().pathname;
     const isDashboard = pathname.includes("dashboard");
     return (
-        <div className="flex flex-col min-h-screen">
-            {!isDashboard && <Navbar/>}
-            <div className={cn("flex-grow")}>
-                <Outlet/>
+        <div>
+            <div className="flex flex-col min-h-screen">
+                {!isDashboard && <Navbar/>}
+                <div className={cn("flex-grow relative")}>
+                    <Outlet/>
+                </div>
+                {!isDashboard && <Footer/>}
             </div>
-            {!isDashboard && <Footer/>}
         </div>
     );
 };
