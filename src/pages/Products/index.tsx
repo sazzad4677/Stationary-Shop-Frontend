@@ -167,7 +167,7 @@ export default function AllProductsPage() {
                             exit={{opacity: 0, y: 20}}
                             transition={{duration: 0.3}}
                         >
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 items-center justify-center">
                                 {productData?.data?.map((product) => (
                                     <motion.div
                                         key={product._id}

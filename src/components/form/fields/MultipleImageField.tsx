@@ -72,11 +72,11 @@ const MultiImageField = <T extends FieldValues>({
                         </FormLabel>
                     )}
                     <FormControl>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 gap-2 items-center justify-center">
                             {/* Render uploaded images */}
                             {fieldValue.map((image: { file: File | undefined, preview: string }, index: number) => (
                                  <div
-                                    className="relative group h-36 w-36"
+                                    className="relative group h-48 w-48"
                                     key={index}
                                 >
                                     <img
@@ -103,7 +103,7 @@ const MultiImageField = <T extends FieldValues>({
                             {fieldValue.length !== maxLength && <div>
                                 <label
                                     htmlFor={`file-${name}`}
-                                    className="flex h-36 w-36 flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-gray-300 bg-gray-100 cursor-pointer hover:border-gray-400 hover:bg-gray-200 transition-all"
+                                    className="flex h-48 w-48 flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-gray-300 bg-gray-100 cursor-pointer hover:border-gray-400 hover:bg-gray-200 transition-all"
                                 >
                                     <Image className="h-8 w-8 text-gray-400"/>
                                     <span className="text-sm text-gray-500">Add Images</span>

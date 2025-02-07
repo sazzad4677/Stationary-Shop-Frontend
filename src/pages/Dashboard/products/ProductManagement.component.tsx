@@ -159,7 +159,7 @@ const ProductManagement = ({
                     <Plus className="mr-2 h-4 w-4"/> Add Product
                 </Button>
             </DialogTrigger>
-            <DialogContent className="w-[70vw] max-w-4xl  max-h-[80vh] overflow-y-auto" onInteractOutside={(e) => e.preventDefault()}>
+            <DialogContent className="w-[90vw] max-w-4xl  max-h-[90vh] overflow-y-auto" onInteractOutside={(e) => e.preventDefault()}>
                 <DialogHeader>
                     <DialogTitle>{editingProduct ? "Edit Product" : "Add New Product"}</DialogTitle>
                 </DialogHeader>
