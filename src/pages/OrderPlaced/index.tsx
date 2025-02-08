@@ -32,6 +32,9 @@ export default function OrderPlaced() {
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [singleOrderData, isPrinting]);
+    useEffect(() => {
+     if(!locationState) navigate(-1)
+    }, []);
     return (
       (<div className="flex items-center justify-center min-h-screen p-4">
           {  (loading || isFetching) && <LoadingSpinner/>}
