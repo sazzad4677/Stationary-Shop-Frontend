@@ -1,9 +1,15 @@
-
 # Stationary Shop Frontend
 
 A responsive and modern web application for a Stationary Shop. Built with **React**, **TypeScript**, **Vite**, and **Tailwind CSS**, this project offers a fast, user-friendly interface for browsing and purchasing stationary products.
 
 [![Live Demo](https://img.shields.io/badge/Live-Demo-blue)](https://stationary-shop-frontend-silk.vercel.app)
+
+## 🔗 Project Links
+
+- **Frontend Repository:** [github.com/sazzad4677/Stationary-Shop-Frontend](https://github.com/sazzad4677/Stationary-Shop-Frontend)  
+- **Backend Repository:** [github.com/sazzad4677/Stationary-Shop](https://github.com/sazzad4677/Stationary-Shop)  
+- **Live Frontend:** [stationary-shop-frontend-silk.vercel.app](https://stationary-shop-frontend-silk.vercel.app)  
+- **Live Backend:** [stationary-shop-ux3o.onrender.com](https://stationary-shop-ux3o.onrender.com)
 
 ## Table of Contents
 
@@ -59,6 +65,7 @@ The **Stationary Shop Frontend** project provides a sleek and efficient user int
    ```
 
 2. **Install dependencies:**
+
    ```bash
    npm install
    # or
@@ -149,8 +156,8 @@ This project is licensed under the [MIT License](LICENSE).
 
 ## Acknowledgements
 
-- [Vite](https://vitejs.dev) – For the fast and modern development experience.
-- [React](https://reactjs.org) – For building dynamic user interfaces.
-- [Tailwind CSS](https://tailwindcss.com) – For rapid and efficient styling.
-- [ShadCN](https://ui.shadcn.com) – For elegant and accessible UI components.
-- [TypeScript](https://www.typescriptlang.org) – For enhancing code reliability and maintainability.
+* [Vite](https://vitejs.dev) – For the fast and modern development experience.
+* [React](https://reactjs.org) – For building dynamic user interfaces.
+* [Tailwind CSS](https://tailwindcss.com) – For rapid and efficient styling.
+* [ShadCN](https://ui.shadcn.com) – For elegant and accessible UI components.
+* [TypeScript](https://www.typescriptlang.org) – For enhancing code reliability and maintainability.
